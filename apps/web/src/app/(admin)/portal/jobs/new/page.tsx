@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * /admin/jobs/new — Multi-step Create Job wizard
+ * /portal/jobs/new — Multi-step Create Job wizard
  *
  * Step 1 – Role Details      (title, description, type, level, location, salary, deadline, headcount, interview stages)
  * Step 2 – Application Form  (screening questions per QuestionType)
@@ -376,7 +376,7 @@ export default function NewJobPage() {
       }
 
       toast.success(publish ? 'Job published successfully!' : 'Job saved as draft!', { id: toastId });
-      router.push(`/admin/jobs/${jobId}`);
+      router.push(`/portal/jobs/${jobId}`);
     } catch (err: any) {
       const msg = err?.message ?? 'Failed to save. Please try again.';
       toast.error(msg, { id: toastId });
@@ -392,7 +392,7 @@ export default function NewJobPage() {
     <div className="p-6 max-w-4xl">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <Link href="/admin/jobs" className="text-sm text-gray-500 hover:text-gray-700">← Jobs</Link>
+        <Link href="/portal/jobs" className="text-sm text-gray-500 hover:text-gray-700">← Jobs</Link>
         <span className="text-gray-300">/</span>
         <h1 className="text-xl font-bold text-gray-900">New Job</h1>
       </div>

@@ -9,11 +9,11 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             TalentNet
           </Link>
           <nav className="flex items-center gap-6 text-sm font-medium text-gray-600">
-            <Link href="/careers" className="hover:text-indigo-600 transition-colors">
+            {/* <Link href="/careers" className="hover:text-indigo-600 transition-colors">
               Open Roles
-            </Link>
+            </Link> */}
             <Link
-              href="/admin/dashboard"
+              href="/portal/dashboard"
               className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
             >
               Admin

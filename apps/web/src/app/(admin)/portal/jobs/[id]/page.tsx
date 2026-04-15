@@ -159,7 +159,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
       if (action === 'duplicate') {
         const body = await res.json();
         const newId: string = body?.data?.id;
-        if (newId) router.push(`/admin/jobs/${newId}`);
+        if (newId) router.push(`/portal/jobs/${newId}`);
         else mutate();
       } else {
         mutate();
@@ -181,7 +181,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
     return (
       <div className="p-6">
         <div className="text-sm text-red-600">Job not found.</div>
-        <Link href="/admin/jobs" className="mt-3 text-sm text-indigo-600 hover:underline">
+        <Link href="/portal/jobs" className="mt-3 text-sm text-indigo-600 hover:underline">
           ← Back to Jobs
         </Link>
       </div>
@@ -207,7 +207,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <Link href="/admin/jobs" className="text-sm text-gray-500 hover:text-gray-700">
+            <Link href="/portal/jobs" className="text-sm text-gray-500 hover:text-gray-700">
               ← Jobs
             </Link>
             <span className="text-gray-300">/</span>
@@ -236,7 +236,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           {/* Edit — only for non-terminal states */}
           {status !== JobStatus.ARCHIVED && (
             <Link
-              href={`/admin/jobs/${id}/edit`}
+              href={`/portal/jobs/${id}/edit`}
               className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
             >
               Edit
@@ -395,7 +395,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-semibold text-gray-900">Scoring Configuration</h2>
               <Link
-                href={`/admin/jobs/${id}/scoring`}
+                href={`/portal/jobs/${id}/scoring`}
                 className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
               >
                 {job.hasScoringConfig ? 'Edit' : 'Configure'}

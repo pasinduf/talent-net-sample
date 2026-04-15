@@ -6,13 +6,13 @@ import { clsx } from 'clsx';
 import { Toaster } from 'sonner';
 
 const NAV_ITEMS = [
-  { label: 'Dashboard', href: '/admin/dashboard', icon: '⊞' },
-  { label: 'Jobs', href: '/admin/jobs', icon: '📋' },
-  { label: 'Applications', href: '/admin/applications', icon: '📥' },
-  { label: 'Candidates', href: '/admin/candidates', icon: '👤' },
-  { label: 'Interviews', href: '/admin/interviews', icon: '🎙️' },
-  { label: 'Talent Pools', href: '/admin/pools', icon: '🏊' },
-  { label: 'Analytics', href: '/admin/analytics', icon: '📊' },
+  { label: 'Dashboard', href: '/portal/dashboard', icon: '⊞' },
+  { label: 'Jobs', href: '/portal/jobs', icon: '📋' },
+  { label: 'Applications', href: '/portal/applications', icon: '📥' },
+  { label: 'Candidates', href: '/portal/candidates', icon: '👤' },
+  { label: 'Interviews', href: '/portal/interviews', icon: '🎙️' },
+  { label: 'Talent Pools', href: '/portal/pools', icon: '🏊' },
+  { label: 'Analytics', href: '/portal/analytics', icon: '📊' },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -23,7 +23,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Sidebar */}
       <aside className="w-64 flex-shrink-0 bg-white border-r border-gray-200 flex flex-col">
         <div className="h-16 flex items-center px-6 border-b border-gray-200">
-          <Link href="/admin/dashboard" className="text-lg font-bold text-indigo-600">
+          <Link href="/portal/dashboard" className="text-lg font-bold text-indigo-600">
             TalentNet HR
           </Link>
         </div>

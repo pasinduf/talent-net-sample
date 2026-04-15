@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Scoring Configuration Editor — /admin/jobs/[id]/scoring
+ * Scoring Configuration Editor — /portal/jobs/[id]/scoring
  *
  * Sections:
  *  1. Overview (phase weights + thresholds) — editable inline via PATCH /jobs/{jobId}/scoring
@@ -418,9 +418,9 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
     <div className="p-6 max-w-5xl">
       {/* Breadcrumb */}
       <nav className="text-sm text-gray-500 mb-6 flex items-center gap-2">
-        <Link href="/admin/jobs" className="hover:text-indigo-600">Jobs</Link>
+        <Link href="/portal/jobs" className="hover:text-indigo-600">Jobs</Link>
         <span>/</span>
-        <Link href={`/admin/jobs/${jobId}`} className="hover:text-indigo-600">{job?.title ?? jobId}</Link>
+        <Link href={`/portal/jobs/${jobId}`} className="hover:text-indigo-600">{job?.title ?? jobId}</Link>
         <span>/</span>
         <span className="text-gray-800">Scoring</span>
       </nav>

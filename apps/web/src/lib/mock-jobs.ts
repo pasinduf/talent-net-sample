@@ -36,7 +36,6 @@ export const MOCK_JOBS = [
         <li>Excellent communication and collaboration skills</li>
       </ul>
     `,
-    interviewTypes: [InterviewType.TECHNICAL, InterviewType.CULTURAL_FIT, InterviewType.PANEL],
     applicationForm: { screeningQuestions: [] },
     hasScoringConfig: true,
   },
@@ -74,7 +73,6 @@ export const MOCK_JOBS = [
         <li>Experience with user research methodologies</li>
       </ul>
     `,
-    interviewTypes: [InterviewType.PORTFOLIO_REVIEW, InterviewType.CULTURAL_FIT],
     applicationForm: {
       screeningQuestions: [
         { id: 'sq1', question: 'Please share a link to your portfolio', type: 'text', isRequired: true, isKnockout: false, order: 1 },
@@ -115,7 +113,6 @@ export const MOCK_JOBS = [
         <li>Analytical mindset and attention to detail</li>
       </ul>
     `,
-    interviewTypes: [InterviewType.TECHNICAL, InterviewType.CULTURAL_FIT],
     applicationForm: { screeningQuestions: [] },
     hasScoringConfig: false,
   },
@@ -153,7 +150,6 @@ export const MOCK_JOBS = [
         <li>Familiarity with containerization (Docker, ECS or EKS)</li>
       </ul>
     `,
-    interviewTypes: [InterviewType.TECHNICAL, InterviewType.PANEL],
     applicationForm: { screeningQuestions: [] },
     hasScoringConfig: true,
   },
@@ -191,7 +187,6 @@ export const MOCK_JOBS = [
         <li>Experience managing a team</li>
       </ul>
     `,
-    interviewTypes: [InterviewType.CULTURAL_FIT, InterviewType.PANEL],
     applicationForm: { screeningQuestions: [] },
     hasScoringConfig: false,
   },
@@ -228,7 +223,6 @@ export const MOCK_JOBS = [
         <li>Available for at least 30 hours/week for 6 months</li>
       </ul>
     `,
-    interviewTypes: [InterviewType.TECHNICAL],
     applicationForm: {
       screeningQuestions: [
         { id: 'sq2', question: 'What is your hourly rate expectation (USD)?', type: 'text', isRequired: true, isKnockout: false, order: 1 },
@@ -270,7 +264,6 @@ export const MOCK_JOBS = [
         <li>Experience in a fast-growing tech or startup environment preferred</li>
       </ul>
     `,
-    interviewTypes: [InterviewType.CULTURAL_FIT, InterviewType.PANEL],
     applicationForm: { screeningQuestions: [] },
     hasScoringConfig: false,
   },
@@ -305,7 +298,6 @@ export const MOCK_JOBS = [
         <li>Basic understanding of ML concepts (regression, classification, evaluation metrics)</li>
       </ul>
     `,
-    interviewTypes: [InterviewType.TECHNICAL, InterviewType.CULTURAL_FIT],
     applicationForm: {
       screeningQuestions: [
         { id: 'sq4', question: 'Are you currently enrolled in a university or recently graduated (within 12 months)?', type: 'yes_no', isRequired: true, isKnockout: true, order: 1 },

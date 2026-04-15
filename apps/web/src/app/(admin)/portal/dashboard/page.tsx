@@ -4,12 +4,12 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = { title: 'HR Dashboard — TalentNet' };
 
 const QUICK_LINKS = [
-  { label: 'Post a New Job', href: '/admin/jobs/new', description: 'Create a job listing and configure screening', icon: '📝' },
-  { label: 'Manage Jobs', href: '/admin/jobs', description: 'View, edit, and update job statuses', icon: '📋' },
-  { label: 'Applications', href: '/admin/applications', description: 'Review incoming candidate applications', icon: '📥' },
-  { label: 'Candidates', href: '/admin/candidates', description: 'Browse your candidate talent pool', icon: '👤' },
-  { label: 'Interviews', href: '/admin/interviews', description: 'Schedule and track interview stages', icon: '🎙️' },
-  { label: 'Analytics', href: '/admin/analytics', description: 'Hiring funnel metrics and reports', icon: '📊' },
+  { label: 'Post a New Job', href: '/portal/jobs/new', description: 'Create a job listing and configure screening', icon: '📝' },
+  { label: 'Manage Jobs', href: '/portal/jobs', description: 'View, edit, and update job statuses', icon: '📋' },
+  { label: 'Applications', href: '/portal/applications', description: 'Review incoming candidate applications', icon: '📥' },
+  { label: 'Candidates', href: '/portal/candidates', description: 'Browse your candidate talent pool', icon: '👤' },
+  { label: 'Interviews', href: '/portal/interviews', description: 'Schedule and track interview stages', icon: '🎙️' },
+  { label: 'Analytics', href: '/portal/analytics', description: 'Hiring funnel metrics and reports', icon: '📊' },
 ];
 
 export default function DashboardPage() {

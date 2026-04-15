@@ -98,7 +98,7 @@ export default function JobsListPage() {
           <p className="text-sm text-gray-500 mt-1">Manage job postings and their configurations</p>
         </div>
         <Link
-          href="/admin/jobs/new"
+          href="/portal/jobs/new"
           className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
         >
           + New Job
@@ -160,7 +160,7 @@ export default function JobsListPage() {
               {jobs.map((job: any) => (
                 <tr key={job.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-5 py-4 font-medium text-gray-900">
-                    <Link href={`/admin/jobs/${job.id}`} className="hover:text-indigo-600">
+                    <Link href={`/portal/jobs/${job.id}`} className="hover:text-indigo-600">
                       {job.title}
                     </Link>
                   </td>
@@ -176,7 +176,7 @@ export default function JobsListPage() {
                       <span className="text-green-600 text-xs font-medium">✓ Configured</span>
                     ) : (
                       <Link
-                        href={`/admin/jobs/${job.id}/scoring`}
+                        href={`/portal/jobs/${job.id}/scoring`}
                         className="text-amber-600 text-xs font-medium underline"
                       >
                         Setup required
@@ -191,7 +191,7 @@ export default function JobsListPage() {
                   <td className="px-5 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <Link
-                        href={`/admin/jobs/${job.id}/scoring`}
+                        href={`/portal/jobs/${job.id}/scoring`}
                         className="px-2.5 py-1 text-xs border border-gray-300 rounded-lg hover:bg-gray-50"
                       >
                         Scoring

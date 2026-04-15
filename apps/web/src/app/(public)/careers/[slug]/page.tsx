@@ -120,20 +120,6 @@ export default async function JobDetailPage({ params }: PageProps) {
             dangerouslySetInnerHTML={{ __html: job.description }}
           />
 
-          {/* What to expect in the process */}
-          {job.interviewTypes?.length > 0 && (
-            <div className="mt-10 p-5 rounded-xl bg-indigo-50 border border-indigo-100">
-              <h3 className="font-semibold text-indigo-900 mb-2">Interview Process</h3>
-              <ul className="text-sm text-indigo-800 space-y-1 list-disc list-inside">
-                {job.interviewTypes.map((type: string) => (
-                  <li key={type} className="capitalize">
-                    {type?.replace('_', ' ')} interview
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
           {/* Privacy notice */}
           <p className="mt-10 text-xs text-gray-400">
             By applying, you agree to the processing of your personal data as described in our{' '}
