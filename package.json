@@ -1,0 +1,31 @@
+{
+  "name": "talent-net",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
+    "db:migrate": "turbo run db:migrate --filter=@talent-net/database",
+    "db:migrate:revert": "turbo run db:migrate:revert --filter=@talent-net/database",
+    "db:generate": "turbo run db:generate --filter=@talent-net/database",
+    "db:seed": "turbo run db:seed --filter=@talent-net/database",
+    "clean": "turbo run clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.3",
+    "typescript": "^5.6.0",
+    "prettier": "^3.3.3",
+    "@types/node": "^22.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "packageManager": "npm@10.8.0"
+}

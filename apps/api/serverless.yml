@@ -1,0 +1,260 @@
+service: talent-net-api
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ${env:AWS_REGION, 'ap-southeast-1'}
+  stage: ${opt:stage, 'dev'}
+  memorySize: 512
+  timeout: 29
+  environment:
+    NODE_ENV: ${self:provider.stage}
+    DATABASE_URL: ${env:DATABASE_URL, ''}
+    JWT_SECRET: ${env:JWT_SECRET, ''}
+    JWT_EXPIRES_IN: ${env:JWT_EXPIRES_IN, '7d'}
+    OPENROUTER_API_KEY: ${env:OPENROUTER_API_KEY, ''}
+    OPENROUTER_MODEL: ${env:OPENROUTER_MODEL, 'google/gemini-flash-1.5'}
+    S3_BUCKET_NAME: ${env:S3_BUCKET_NAME,''}
+    RESEND_API_KEY: ${env:RESEND_API_KEY,''}
+    RESEND_FROM_EMAIL: ${env:RESEND_FROM_EMAIL, 'noreply@talent-net.example.com'}
+  # iam:
+  #   role:
+  #     statements:
+  #       - Effect: Allow
+  #         Action:
+  #           - s3:GetObject
+  #           - s3:PutObject
+  #           - s3:DeleteObject
+  #         Resource: arn:aws:s3:::${env:S3_BUCKET_NAME}/*
+  #       - Effect: Allow
+  #         Action:
+  #           - logs:CreateLogGroup
+  #           - logs:CreateLogStream
+  #           - logs:PutLogEvents
+  #         Resource: '*'
+  httpApi:
+    cors:
+      allowedOrigins:
+        - ${env:NEXT_PUBLIC_APP_URL, 'http://localhost:3000'}
+      allowedMethods:
+        - GET
+        - POST
+        - PUT
+        - PATCH
+        - DELETE
+        - OPTIONS
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+        - X-Request-Id
+      allowCredentials: true
+
+plugins:
+  - serverless-esbuild
+  - serverless-offline
+
+custom:
+  esbuild:
+    bundle: true
+    minify: ${self:custom.isProduction.${self:provider.stage}, false}
+    sourcemap: true
+    target: node20
+    platform: node
+    concurrency: 10
+    packager: npm
+    exclude:
+      - pg-native
+  isProduction:
+    prod: true
+  serverless-offline:
+    httpPort: 4000
+    lambdaPort: 4001
+    noPrependStageInUrl: true
+
+functions:
+  # ─── Auth ──────────────────────────────────────────────────────────────────
+  login:
+    handler: src/functions/auth/login.handler
+    events:
+      - httpApi:
+          path: /auth/login
+          method: POST
+
+  register:
+    handler: src/functions/auth/register.handler
+    events:
+      - httpApi:
+          path: /auth/register
+          method: POST
+
+  me:
+    handler: src/functions/auth/me.handler
+    events:
+      - httpApi:
+          path: /auth/me
+          method: GET
+
+  # ─── Jobs ──────────────────────────────────────────────────────────────────
+  createJob:
+    handler: src/functions/jobs/create.handler
+    events:
+      - httpApi:
+          path: /jobs
+          method: POST
+
+  listJobs:
+    handler: src/functions/jobs/list.handler
+    events:
+      - httpApi:
+          path: /jobs
+          method: GET
+
+  getJob:
+    handler: src/functions/jobs/get.handler
+    events:
+      - httpApi:
+          path: /jobs/{id}
+          method: GET
+
+  updateJob:
+    handler: src/functions/jobs/update.handler
+    events:
+      - httpApi:
+          path: /jobs/{id}
+          method: PATCH
+
+  publishJob:
+    handler: src/functions/jobs/publish.handler
+    events:
+      - httpApi:
+          path: /jobs/{id}/publish
+          method: POST
+
+  pauseJob:
+    handler: src/functions/jobs/pause.handler
+    events:
+      - httpApi:
+          path: /jobs/{id}/pause
+          method: POST
+
+  closeJob:
+    handler: src/functions/jobs/close.handler
+    events:
+      - httpApi:
+          path: /jobs/{id}/close
+          method: POST
+
+  duplicateJob:
+    handler: src/functions/jobs/duplicate.handler
+    events:
+      - httpApi:
+          path: /jobs/{id}/duplicate
+          method: POST
+
+  deleteJob:
+    handler: src/functions/jobs/delete.handler
+    events:
+      - httpApi:
+          path: /jobs/{id}
+          method: DELETE
+
+  # ─── Public careers portal (no auth) ────────────────────────────────────────
+  listPublicJobs:
+    handler: src/functions/public/listJobs.handler
+    events:
+      - httpApi:
+          path: /public/jobs
+          method: GET
+
+  getPublicJob:
+    handler: src/functions/public/getJob.handler
+    events:
+      - httpApi:
+          path: /public/jobs/{slug}
+          method: GET
+
+  # ─── Scoring Configuration ─────────────────────────────────────────────────
+  createScoringConfig:
+    handler: src/functions/scoring/create.handler
+    events:
+      - httpApi:
+          path: /jobs/{jobId}/scoring
+          method: POST
+
+  getScoringConfig:
+    handler: src/functions/scoring/get.handler
+    events:
+      - httpApi:
+          path: /jobs/{jobId}/scoring
+          method: GET
+
+  updateScoringConfig:
+    handler: src/functions/scoring/update.handler
+    events:
+      - httpApi:
+          path: /jobs/{jobId}/scoring
+          method: PATCH
+
+  addEvaluationDimension:
+    handler: src/functions/scoring/addDimension.handler
+    events:
+      - httpApi:
+          path: /jobs/{jobId}/scoring/dimensions
+          method: POST
+
+  updateEvaluationDimension:
+    handler: src/functions/scoring/updateDimension.handler
+    events:
+      - httpApi:
+          path: /jobs/{jobId}/scoring/dimensions/{dimensionId}
+          method: PATCH
+
+  removeEvaluationDimension:
+    handler: src/functions/scoring/removeDimension.handler
+    events:
+      - httpApi:
+          path: /jobs/{jobId}/scoring/dimensions/{dimensionId}
+          method: DELETE
+
+  addKnockoutRule:
+    handler: src/functions/scoring/addKnockoutRule.handler
+    events:
+      - httpApi:
+          path: /jobs/{jobId}/scoring/knockout-rules
+          method: POST
+
+  updateKnockoutRule:
+    handler: src/functions/scoring/updateKnockoutRule.handler
+    events:
+      - httpApi:
+          path: /jobs/{jobId}/scoring/knockout-rules/{ruleId}
+          method: PATCH
+
+  removeKnockoutRule:
+    handler: src/functions/scoring/removeKnockoutRule.handler
+    events:
+      - httpApi:
+          path: /jobs/{jobId}/scoring/knockout-rules/{ruleId}
+          method: DELETE
+
+  listScoringTemplates:
+    handler: src/functions/scoring/listTemplates.handler
+    events:
+      - httpApi:
+          path: /scoring/templates
+          method: GET
+
+  applyTemplate:
+    handler: src/functions/scoring/applyTemplate.handler
+    events:
+      - httpApi:
+          path: /jobs/{jobId}/scoring/apply-template/{templateId}
+          method: POST
+
+  validateScoringConfig:
+    handler: src/functions/scoring/validate.handler
+    events:
+      - httpApi:
+          path: /jobs/{jobId}/scoring/validate
+          method: GET

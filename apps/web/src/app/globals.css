@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --brand-primary: 79 70 229;   /* indigo-600 */
+    --brand-secondary: 16 185 129; /* emerald-500 */
+  }
+}

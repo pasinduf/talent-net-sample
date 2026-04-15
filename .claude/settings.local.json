@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(PGPASSWORD=root psql -U postgres -h localhost -d talentnet -c \"DROP SCHEMA public CASCADE; CREATE SCHEMA public;\")",
+      "Bash(where psql *)",
+      "Bash(PGPASSWORD=root \"/c/Program Files/PostgreSQL/16/bin/psql\" -U postgres -h localhost -d talentnet -c \"DROP SCHEMA public CASCADE; CREATE SCHEMA public;\")",
+      "Bash(npx tsc *)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(echo \"exit:$?\")",
+      "Bash(netstat -ano)",
+      "Bash(taskkill /PID 24816 /F)",
+      "Bash(cmd /c \"taskkill /PID 24816 /F\")",
+      "Bash(cmd //c \"taskkill /PID 24816 /F\")"
+    ]
+  }
+}

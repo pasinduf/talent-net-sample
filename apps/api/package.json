@@ -1,0 +1,38 @@
+{
+  "name": "@talent-net/api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "dotenv -e ../../.env serverless package",
+    "dev": "dotenv -e ../../.env serverless offline start --reloadHandler",
+    "dev:debug": "dotenv -e ../../.env node --inspect=9229 ../../node_modules/serverless/bin/serverless.js offline start",
+    "deploy": "dotenv -e ../../.env serverless deploy",
+    "deploy:prod": "dotenv -e ../../.env serverless deploy --stage prod",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "clean": "rm -rf .serverless dist"
+  },
+  "dependencies": {
+    "@talent-net/database": "*",
+    "@talent-net/types": "*",
+    "reflect-metadata": "^0.2.2",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "zod": "^3.23.8",
+    "openai": "^4.77.0",
+    "resend": "^4.0.0",
+    "slugify": "^1.6.6"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^7.4.4",
+    "@talent-net/config": "*",
+    "@types/aws-lambda": "^8.10.145",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.0.0",
+    "serverless": "^3.38.0",
+    "serverless-esbuild": "^1.52.1",
+    "serverless-offline": "^13.9.0",
+    "typescript": "^5.6.0"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "extends": "@talent-net/config/tsconfig/server.json",
+  "compilerOptions": {
+    "rootDir": "../..",
+    "outDir": "./dist",
+    "noEmit": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "paths": {
+      "@talent-net/types": ["../../packages/types/src/index.ts"],
+      "@talent-net/database": ["../../packages/database/src/index.ts"]
+    }
+  },
+  "include": ["src", "../../packages/types/src", "../../packages/database/src"],
+  "exclude": ["node_modules", "dist", ".serverless"]
+}

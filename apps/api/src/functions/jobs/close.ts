@@ -1,0 +1,54 @@
+import 'reflect-metadata';
+import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Context } from 'aws-lambda';
+import { UserRole, JobStatus, AuditAction, ErrorCode } from '@talent-net/types';
+import { AuditLog, JobRepository } from '@talent-net/database';
+import { withErrorHandler } from '../../middleware/handler.js';
+import { requireRoles } from '../../middleware/auth.js';
+import { ok } from '../../shared/response.js';
+import { NotFoundError, BusinessError } from '../../shared/errors.js';
+import { db } from '../../shared/db.js';
+
+async function handle(
+  event: APIGatewayProxyEventV2,
+  _context: Context
+): Promise<APIGatewayProxyResultV2> {
+  const actor = requireRoles(event, UserRole.HR_ADMIN);
+
+  const id = event.pathParameters?.id;
+  if (!id) throw new NotFoundError('Job');
+
+  const dataSource = await db();
+  const jobRepo = new JobRepository(dataSource);
+  const auditRepo = dataSource.getRepository(AuditLog);
+
+  const job = await jobRepo.findOne({ where: { id } });
+  if (!job) throw new NotFoundError('Job');
+
+  const allowedStatuses: JobStatus[] = [JobStatus.PUBLISHED, JobStatus.PAUSED];
+  if (!allowedStatuses.includes(job.status)) {
+    throw new BusinessError(
+      ErrorCode.INVALID_STATUS_TRANSITION,
+      `Only published or paused jobs can be closed. Current status: '${job.status}'`
+    );
+  }
+
+  const previousStatus = job.status;
+  job.status = JobStatus.CLOSED;
+  job.closedAt = new Date();
+  const saved = await jobRepo.save(job);
+
+  await auditRepo.save(
+    auditRepo.create({
+      action: AuditAction.JOB_CLOSED,
+      entityType: 'Job',
+      entityId: saved.id,
+      actorId: actor.id,
+      previousState: { status: previousStatus },
+      newState: { status: JobStatus.CLOSED, closedAt: saved.closedAt },
+    })
+  );
+
+  return ok({ id: saved.id, status: saved.status, closedAt: saved.closedAt });
+}
+
+export const handler = withErrorHandler(handle);
