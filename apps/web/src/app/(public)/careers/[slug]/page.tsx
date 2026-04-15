@@ -127,7 +127,7 @@ export default async function JobDetailPage({ params }: PageProps) {
               <ul className="text-sm text-indigo-800 space-y-1 list-disc list-inside">
                 {job.interviewTypes.map((type: string) => (
                   <li key={type} className="capitalize">
-                    {type.replace('_', ' ')} interview
+                    {type?.replace('_', ' ')} interview
                   </li>
                 ))}
               </ul>

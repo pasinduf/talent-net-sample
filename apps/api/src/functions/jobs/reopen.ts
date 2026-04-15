@@ -24,31 +24,28 @@ async function handle(
   const job = await jobRepo.findOne({ where: { id } });
   if (!job) throw new NotFoundError('Job');
 
-  const allowedStatuses: JobStatus[] = [JobStatus.PUBLISHED, JobStatus.PAUSED];
-  if (!allowedStatuses.includes(job.status)) {
+  if (job.status !== JobStatus.PAUSED) {
     throw new BusinessError(
       ErrorCode.INVALID_STATUS_TRANSITION,
-      `Only published or paused jobs can be closed. Current status: '${job.status}'`
+      `Only paused jobs can be reopened. Current status: '${job.status}'`
     );
   }
 
-  const previousStatus = job.status;
-  job.status = JobStatus.CLOSED;
-  job.closedAt = new Date();
+  job.status = JobStatus.PUBLISHED;
   const saved = await jobRepo.save(job);
 
   await auditRepo.save(
     auditRepo.create({
-      action: AuditAction.JOB_CLOSED,
+      action: AuditAction.JOB_PUBLISHED,
       entityType: 'Job',
       entityId: saved.id,
       actorId: actor.id,
-      previousState: { status: previousStatus },
-      newState: { status: JobStatus.CLOSED, closedAt: saved.closedAt },
+      previousState: { status: JobStatus.PAUSED },
+      newState: { status: JobStatus.PUBLISHED },
     })
   );
 
-  return ok({ id: saved.id, status: saved.status, closedAt: saved.closedAt });
+  return ok({ id: saved.id, status: saved.status });
 }
 
 export const handler = withErrorHandler(handle);

@@ -19,6 +19,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { clsx } from 'clsx';
+import { toast } from 'sonner';
 import {
   EmploymentType,
   ExperienceLevel,
@@ -267,6 +268,8 @@ export default function NewJobPage() {
     setSaving(true);
     setStepError('');
 
+    const toastId = toast.loading('Creating job...');
+
     try {
       // 1. Create job
       const jobRes = await fetch(`${API}/jobs`, {
@@ -298,6 +301,7 @@ export default function NewJobPage() {
 
       // 2. Create screening questions (if any)
       if (questions.length > 0) {
+        toast.loading(`Saving ${questions.length} screening question(s)...`, { id: toastId });
         const questionsPayload = questions.map((q, i) => ({
           question: q.question,
           type: q.type,
@@ -309,14 +313,19 @@ export default function NewJobPage() {
           helpText: q.helpText || undefined,
           order: i,
         }));
-        await fetch(`${API}/jobs/${jobId}/screening`, {
+        const screeningRes = await fetch(`${API}/jobs/${jobId}/screening`, {
           method: 'POST',
           headers: authHeaders(),
           body: JSON.stringify({ questions: questionsPayload }),
         });
+        if (!screeningRes.ok) {
+          const body = await screeningRes.json().catch(() => ({}));
+          throw new Error((body as any)?.error?.message ?? `Failed to save screening questions (${screeningRes.status})`);
+        }
       }
 
       // 3. Create scoring config (always, even without dimensions)
+      toast.loading('Saving scoring configuration...', { id: toastId });
       const scoringPayload = {
         totalScaleMax: 100,
         preInterviewWeight: Number(scoring.preInterviewWeight),
@@ -343,23 +352,35 @@ export default function NewJobPage() {
           errorMessage: k.errorMessage,
         })),
       };
-      await fetch(`${API}/jobs/${jobId}/scoring`, {
+      const scoringRes = await fetch(`${API}/jobs/${jobId}/scoring`, {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify(scoringPayload),
       });
+      if (!scoringRes.ok) {
+        const body = await scoringRes.json().catch(() => ({}));
+        throw new Error((body as any)?.error?.message ?? `Failed to save scoring config (${scoringRes.status})`);
+      }
 
       // 4. Publish if requested
       if (publish) {
-        await fetch(`${API}/jobs/${jobId}/publish`, {
+        toast.loading('Publishing job...', { id: toastId });
+        const publishRes = await fetch(`${API}/jobs/${jobId}/publish`, {
           method: 'POST',
           headers: authHeaders(),
         });
+        if (!publishRes.ok) {
+          const body = await publishRes.json().catch(() => ({}));
+          throw new Error((body as any)?.error?.message ?? `Failed to publish job (${publishRes.status})`);
+        }
       }
 
+      toast.success(publish ? 'Job published successfully!' : 'Job saved as draft!', { id: toastId });
       router.push(`/admin/jobs/${jobId}`);
     } catch (err: any) {
-      setStepError(err?.message ?? 'Failed to save. Please try again.');
+      const msg = err?.message ?? 'Failed to save. Please try again.';
+      toast.error(msg, { id: toastId });
+      setStepError(msg);
     } finally {
       setSaving(false);
     }
@@ -1322,7 +1343,7 @@ function PhaseBar({ pre, post }: { pre: number; post: number }) {
       </div>
       {!ok && (
         <p className="text-xs text-red-600 mt-1">
-          Total: {sum.toFixed(1)}% — must equal 100%
+          Total: {sum.toFixed(1)}% - must equal 100%
         </p>
       )}
     </div>

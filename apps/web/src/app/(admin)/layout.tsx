@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { clsx } from 'clsx';
+import { Toaster } from 'sonner';
 
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/admin/dashboard', icon: '⊞' },
@@ -75,6 +76,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Page content */}
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
+      <Toaster position="top-right" richColors />
     </div>
   );
 }

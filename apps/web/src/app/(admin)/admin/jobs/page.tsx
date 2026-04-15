@@ -4,9 +4,18 @@ import { useState } from 'react';
 import Link from 'next/link';
 import useSWR from 'swr';
 import { clsx } from 'clsx';
+import { toast } from 'sonner';
 import { JobStatus, EmploymentType, ExperienceLevel } from '@talent-net/types';
+import { useConfirmModal } from '@/components/ui/ConfirmModal';
 
-// --- Simple SWR fetcher using stored token ---
+function authHeaders() {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('tn_token') : null;
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  } as Record<string, string>;
+}
+
 function fetcher(url: string) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('tn_token') : null;
   return fetch(url, { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json());
@@ -36,16 +45,51 @@ export default function JobsListPage() {
   const jobs: any[] = data?.data ?? [];
   const meta = data?.meta ?? {};
 
-  async function changeStatus(jobId: string, action: 'publish' | 'pause' | 'close') {
-    const token = localStorage.getItem('tn_token');
-    await fetch(`${API}/jobs/${jobId}/${action}`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    mutate();
+  const { confirm, confirmModal } = useConfirmModal();
+
+  type JobAction = 'publish' | 'pause' | 'close' | 'archive' | 'reopen';
+
+  const ACTION_SUCCESS: Record<JobAction, string> = {
+    publish: 'Job published!',
+    pause: 'Job paused.',
+    close: 'Job closed.',
+    archive: 'Job archived.',
+    reopen: 'Job reopened!',
+  };
+
+  const CONFIRM_OPTIONS: Partial<Record<JobAction, { title: string; description: string; confirmLabel: string; variant?: 'danger' | 'warning' }>> = {
+    publish: { title: 'Publish this job?', description: 'The listing will become publicly visible on the careers portal immediately.', confirmLabel: 'Publish', variant: 'warning' },
+    pause:   { title: 'Pause this job?',   description: 'The listing will be hidden from the careers portal until reopened.',          confirmLabel: 'Pause',   variant: 'warning' },
+    close:   { title: 'Close this job?',   description: 'No new applications will be accepted. This cannot be undone without reopening.', confirmLabel: 'Close', variant: 'danger' },
+    archive: { title: 'Archive this job?', description: 'The job will be archived and can no longer be reopened.',                      confirmLabel: 'Archive', variant: 'danger' },
+  };
+
+  async function changeStatus(jobId: string, action: JobAction) {
+    const opts = CONFIRM_OPTIONS[action];
+    if (opts) {
+      const ok = await confirm({ ...opts });
+      if (!ok) return;
+    }
+    const toastId = toast.loading(`${action.charAt(0).toUpperCase() + action.slice(1)}ing job...`);
+    try {
+      const res = await fetch(`${API}/jobs/${jobId}/${action}`, {
+        method: 'POST',
+        headers: authHeaders(),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error((body as any)?.error?.message ?? `Server error ${res.status}`);
+      }
+      toast.success(ACTION_SUCCESS[action], { id: toastId });
+      mutate();
+    } catch (err: any) {
+      toast.error(err?.message ?? 'Action failed.', { id: toastId });
+    }
   }
 
   return (
+    <>
+    {confirmModal}
     <div className="p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
@@ -62,7 +106,7 @@ export default function JobsListPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3 mb-6">
+      <div className="flex flex-wrap items-center gap-3 mb-6">
         <input
           type="text"
           placeholder="Search jobs…"
@@ -80,6 +124,17 @@ export default function JobsListPage() {
             <option key={s} value={s}>{s.replace('_', ' ')}</option>
           ))}
         </select>
+        {(search || status) && (
+          <button
+            onClick={() => { setSearch(''); setStatus(''); setPage(1); }}
+            className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+            Clear filters
+          </button>
+        )}
       </div>
 
       {/* Table */}
@@ -144,7 +199,7 @@ export default function JobsListPage() {
                       {job.status === JobStatus.DRAFT && (
                         <button
                           onClick={() => changeStatus(job.id, 'publish')}
-                          className="px-2.5 py-1 text-xs bg-green-600 text-white rounded-lg hover:bg-green-700"
+                          className="px-2.5 py-1 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
                         >
                           Publish
                         </button>
@@ -155,6 +210,30 @@ export default function JobsListPage() {
                           className="px-2.5 py-1 text-xs bg-amber-500 text-white rounded-lg hover:bg-amber-600"
                         >
                           Pause
+                        </button>
+                      )}
+                      {job.status === JobStatus.PAUSED && (
+                        <button
+                          onClick={() => changeStatus(job.id, 'reopen')}
+                          className="px-2.5 py-1 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                        >
+                          Reopen
+                        </button>
+                      )}
+                      {(job.status === JobStatus.PUBLISHED || job.status === JobStatus.PAUSED) && (
+                        <button
+                          onClick={() => changeStatus(job.id, 'close')}
+                          className="px-2.5 py-1 text-xs bg-red-600 text-white rounded-lg hover:bg-red-700"
+                        >
+                          Close
+                        </button>
+                      )}
+                      {job.status === JobStatus.CLOSED && (
+                        <button
+                          onClick={() => changeStatus(job.id, 'archive')}
+                          className="px-2.5 py-1 text-xs bg-gray-700 text-white rounded-lg hover:bg-gray-800"
+                        >
+                          Archive
                         </button>
                       )}
                     </div>
@@ -189,5 +268,6 @@ export default function JobsListPage() {
         </div>
       )}
     </div>
+    </>
   );
 }

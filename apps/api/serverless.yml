@@ -71,6 +71,7 @@ custom:
     httpPort: 4000
     lambdaPort: 4001
     noPrependStageInUrl: true
+    noTimeout: true
 
 functions:
   # ─── Auth ──────────────────────────────────────────────────────────────────
@@ -86,6 +87,13 @@ functions:
     events:
       - httpApi:
           path: /auth/register
+          method: POST
+  
+  generatePassword:
+    handler: src/functions/auth/generatePassword.handler
+    events:
+      - httpApi:
+          path: /auth/generatePassword
           method: POST
 
   me:
@@ -150,6 +158,20 @@ functions:
     events:
       - httpApi:
           path: /jobs/{id}/duplicate
+          method: POST
+
+  archiveJob:
+    handler: src/functions/jobs/archive.handler
+    events:
+      - httpApi:
+          path: /jobs/{id}/archive
+          method: POST
+
+  reopenJob:
+    handler: src/functions/jobs/reopen.handler
+    events:
+      - httpApi:
+          path: /jobs/{id}/reopen
           method: POST
 
   deleteJob:
@@ -258,3 +280,11 @@ functions:
       - httpApi:
           path: /jobs/{jobId}/scoring/validate
           method: GET
+
+  # ─── Screening Questions ────────────────────────────────────────────────────
+  bulkCreateScreeningQuestions:
+    handler: src/functions/screening/bulkCreate.handler
+    events:
+      - httpApi:
+          path: /jobs/{jobId}/screening
+          method: POST

@@ -92,7 +92,7 @@ export class ScoringConfigRepository extends Repository<ScoringConfig> {
     const totalWeight = config.evaluationDimensions.reduce((sum, d) => sum + Number(d.weight), 0);
 
     if (Math.abs(totalWeight - 100) > 0.01) {
-      errors.push(`Total dimension weight is ${totalWeight.toFixed(2)}% — must equal 100%`);
+      errors.push(`Total dimension weight is ${totalWeight.toFixed(2)}% - must equal 100%`);
     }
 
     const phaseTotal = { pre_interview: 0, post_interview: 0, both: 0 };

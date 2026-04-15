@@ -32,8 +32,6 @@ async function handle(
   const body = parseBody(event);
   const input = CreateJobSchema.parse(body);
 
-  console.log("create calling")
-
   const dataSource = await db();
   const jobRepo = new JobRepository(dataSource);
   const auditRepo = dataSource.getRepository(AuditLog);
