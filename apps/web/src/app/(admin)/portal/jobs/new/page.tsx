@@ -16,6 +16,7 @@ import {
   KnockoutAction,
 } from '@talent-net/types';
 import { API, authHeaders } from '@/lib/api';
+import { ArrowLeft } from 'lucide-react';
 
 
 function extractApiError(body: any, status: number): string {
@@ -372,7 +373,7 @@ export default function NewJobPage() {
     <div className="p-6 max-w-4xl">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <Link href="/portal/jobs" className="text-sm text-gray-500 hover:text-gray-700">← Jobs</Link>
+        <Link href="/portal/jobs" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"><ArrowLeft size={13} /> Jobs</Link>
         <span className="text-gray-300">/</span>
         <h1 className="text-xl font-bold text-gray-900">New Job</h1>
       </div>

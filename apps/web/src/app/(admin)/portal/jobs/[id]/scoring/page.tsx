@@ -15,6 +15,7 @@ import {
 } from '@talent-net/types';
 
 import { API, fetcher, apiCall } from '@/lib/api';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 
 const PHASE_LABELS: Record<EvaluationPhase, string> = {
@@ -1179,7 +1180,7 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
               className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
               onClick={() => setShowTemplateModal(false)}
             >
-              Manage all templates →
+              Manage all templates <ArrowRight size={13} className="inline" />
             </Link>
             <button
               onClick={() => setShowTemplateModal(false)}

@@ -4,16 +4,28 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { clsx } from 'clsx';
 import { Toaster } from 'sonner';
+import {
+  LayoutDashboard,
+  Briefcase,
+  Star,
+  Inbox,
+  Users,
+  CalendarCheck,
+  UsersRound,
+  BarChart2,
+  ExternalLink,
+  type LucideIcon,
+} from 'lucide-react';
 
-const NAV_ITEMS = [
-  { label: 'Dashboard', href: '/portal/dashboard', icon: '⊞' },
-  { label: 'Jobs', href: '/portal/jobs', icon: '📋' },
-  { label: 'Scoring Templates', href: '/portal/scoring/templates', icon: '⭐' },
-  { label: 'Applications', href: '/portal/applications', icon: '📥' },
-  { label: 'Candidates', href: '/portal/candidates', icon: '👤' },
-  { label: 'Interviews', href: '/portal/interviews', icon: '🎙️' },
-  { label: 'Talent Pools', href: '/portal/pools', icon: '🏊' },
-  { label: 'Analytics', href: '/portal/analytics', icon: '📊' },
+const NAV_ITEMS: { label: string; href: string; Icon: LucideIcon }[] = [
+  { label: 'Dashboard',         href: '/portal/dashboard',          Icon: LayoutDashboard },
+  { label: 'Jobs',              href: '/portal/jobs',               Icon: Briefcase       },
+  { label: 'Scoring Templates', href: '/portal/scoring/templates',  Icon: Star            },
+  { label: 'Applications',      href: '/portal/applications',       Icon: Inbox           },
+  { label: 'Candidates',        href: '/portal/candidates',         Icon: Users           },
+  { label: 'Interviews',        href: '/portal/interviews',         Icon: CalendarCheck   },
+  { label: 'Talent Pools',      href: '/portal/pools',              Icon: UsersRound      },
+  { label: 'Analytics',         href: '/portal/analytics',          Icon: BarChart2       },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -43,7 +55,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                 )}
               >
-                <span>{item.icon}</span>
+                <item.Icon size={16} />
                 {item.label}
               </Link>
             );
@@ -56,7 +68,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             target="_blank"
             className="flex items-center gap-2 text-xs text-gray-500 hover:text-gray-700"
           >
-            <span>↗</span> View Careers Portal
+            <ExternalLink size={12} /> View Careers Portal
           </Link>
         </div>
       </aside>

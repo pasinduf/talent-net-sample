@@ -15,6 +15,7 @@ import {
   QuestionType,
 } from '@talent-net/types';
 import { API, fetcher, apiCall } from '@/lib/api';
+import { ArrowLeft } from 'lucide-react';
 
 const inputCls =
   'w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500';
@@ -330,8 +331,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
     return (
       <div className="p-6">
         <div className="text-sm text-red-600">Job not found.</div>
-        <Link href="/portal/jobs" className="mt-3 text-sm text-indigo-600 hover:underline">
-          ← Back to Jobs
+        <Link href="/portal/jobs" className="mt-3 inline-flex items-center gap-1 text-sm text-indigo-600 hover:underline">
+          <ArrowLeft size={14} /> Back to Jobs
         </Link>
       </div>
     );
@@ -356,8 +357,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <Link href="/portal/jobs" className="text-sm text-gray-500 hover:text-gray-700">
-              ← Jobs
+            <Link href="/portal/jobs" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
+              <ArrowLeft size={13} /> Jobs
             </Link>
             <span className="text-gray-300">/</span>
             <span className="text-sm text-gray-500">{job.department}</span>

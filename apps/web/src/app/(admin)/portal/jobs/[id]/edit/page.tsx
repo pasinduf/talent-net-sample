@@ -14,6 +14,7 @@ import {
 } from '@talent-net/types';
 import { useConfirmModal } from '@/components/ui/ConfirmModal';
 import { API, authHeaders, fetcher } from '@/lib/api';
+import { ArrowLeft } from 'lucide-react';
 
 
 const DEPARTMENTS = [
@@ -227,8 +228,8 @@ export default function EditJobPage({ params }: { params: Promise<{ id: string }
     return (
       <div className="p-6">
         <p className="text-sm text-red-600">Job not found.</p>
-        <Link href="/portal/jobs" className="mt-3 text-sm text-indigo-600 hover:underline">
-          ← Back to Jobs
+        <Link href="/portal/jobs" className="mt-3 inline-flex items-center gap-1 text-sm text-indigo-600 hover:underline">
+          <ArrowLeft size={14} /> Back to Jobs
         </Link>
       </div>
     );
@@ -245,9 +246,9 @@ export default function EditJobPage({ params }: { params: Promise<{ id: string }
       <div className="flex items-center gap-3">
         <Link
           href={`/portal/jobs/${id}`}
-          className="text-sm text-gray-500 hover:text-gray-700"
+          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
         >
-          ← {job.title}
+          <ArrowLeft size={13} /> {job.title}
         </Link>
         <span className="text-gray-300">/</span>
         <h1 className="text-xl font-bold text-gray-900">Edit Job</h1>

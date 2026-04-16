@@ -1,15 +1,47 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { LucideIcon, NotebookPen, Briefcase, Inbox, Users, CalendarCheck, BarChart2 } from 'lucide-react';
+
 
 export const metadata: Metadata = { title: 'HR Dashboard — TalentNet' };
 
-const QUICK_LINKS = [
-  { label: 'Post a New Job', href: '/portal/jobs/new', description: 'Create a job listing and configure screening', icon: '📝' },
-  { label: 'Manage Jobs', href: '/portal/jobs', description: 'View, edit, and update job statuses', icon: '📋' },
-  { label: 'Applications', href: '/portal/applications', description: 'Review incoming candidate applications', icon: '📥' },
-  { label: 'Candidates', href: '/portal/candidates', description: 'Browse your candidate talent pool', icon: '👤' },
-  { label: 'Interviews', href: '/portal/interviews', description: 'Schedule and track interview stages', icon: '🎙️' },
-  { label: 'Analytics', href: '/portal/analytics', description: 'Hiring funnel metrics and reports', icon: '📊' },
+const QUICK_LINKS: { label: string; href: string; description: string; icon: LucideIcon }[] = [
+  {
+    label: 'Post a New Job',
+    href: '/portal/jobs/new',
+    description: 'Create a job listing and configure screening',
+    icon: NotebookPen,
+  },
+  {
+    label: 'Manage Jobs',
+    href: '/portal/jobs',
+    description: 'View, edit, and update job statuses',
+    icon: Briefcase,
+  },
+  {
+    label: 'Applications',
+    href: '/portal/applications',
+    description: 'Review incoming candidate applications',
+    icon: Inbox,
+  },
+  {
+    label: 'Candidates',
+    href: '/portal/candidates',
+    description: 'Browse your candidate talent pool',
+    icon: Users,
+  },
+  {
+    label: 'Interviews',
+    href: '/portal/interviews',
+    description: 'Schedule and track interview stages',
+    icon: CalendarCheck,
+  },
+  {
+    label: 'Analytics',
+    href: '/portal/analytics',
+    description: 'Hiring funnel metrics and reports',
+    icon: BarChart2,
+  },
 ];
 
 export default function DashboardPage() {
@@ -32,14 +64,18 @@ export default function DashboardPage() {
           { label: 'Offers Extended', value: '—', color: 'text-gray-900' },
         ].map((stat) => (
           <div key={stat.label} className="bg-white rounded-xl border border-gray-200 p-5">
-            <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">{stat.label}</p>
+            <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+              {stat.label}
+            </p>
             <p className={`text-3xl font-bold mt-1 ${stat.color}`}>{stat.value}</p>
           </div>
         ))}
       </div>
 
       {/* Quick links */}
-      <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Quick Actions</h2>
+      <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
+        Quick Actions
+      </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {QUICK_LINKS.map((item) => (
           <Link
@@ -47,10 +83,13 @@ export default function DashboardPage() {
             href={item.href}
             className="group bg-white rounded-xl border border-gray-200 p-5 hover:border-indigo-300 hover:shadow-sm transition-all"
           >
-            <div className="text-2xl mb-3">{item.icon}</div>
-            <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
-              {item.label}
-            </h3>
+            <span>
+              <item.icon size={24} />
+              <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                {item.label}
+              </h3>
+            </span>
+
             <p className="text-xs text-gray-500 mt-1">{item.description}</p>
           </Link>
         ))}
