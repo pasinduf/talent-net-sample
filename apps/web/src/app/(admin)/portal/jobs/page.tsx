@@ -7,21 +7,7 @@ import { clsx } from 'clsx';
 import { toast } from 'sonner';
 import { JobStatus, EmploymentType, ExperienceLevel } from '@talent-net/types';
 import { useConfirmModal } from '@/components/ui/ConfirmModal';
-
-function authHeaders() {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('tn_token') : null;
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  } as Record<string, string>;
-}
-
-function fetcher(url: string) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('tn_token') : null;
-  return fetch(url, { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json());
-}
-
-const API = process.env.NEXT_PUBLIC_API_BASE_URL;
+import { API, authHeaders, fetcher } from '@/lib/api';
 
 const STATUS_COLORS: Record<JobStatus, string> = {
   [JobStatus.DRAFT]: 'bg-gray-100 text-gray-700',

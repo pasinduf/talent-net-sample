@@ -7,32 +7,7 @@ import { clsx } from 'clsx';
 import { toast } from 'sonner';
 import { useConfirmModal } from '@/components/ui/ConfirmModal';
 import { DimensionType, EvaluationPhase, KnockoutCondition, KnockoutAction } from '@talent-net/types';
-
-const API = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-function authHeaders() {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('tn_token') : null;
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  } as Record<string, string>;
-}
-
-function fetcher(url: string) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('tn_token') : null;
-  return fetch(url, { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json());
-}
-
-async function apiCall(url: string, body?: unknown, method = 'POST') {
-  const res = await fetch(url, {
-    method,
-    headers: authHeaders(),
-    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
-  });
-  const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error((json as any)?.error?.message ?? `Server error ${res.status}`);
-  return json;
-}
+import { API, fetcher, apiCall } from '@/lib/api';
 
 const PHASE_LABELS: Record<EvaluationPhase, string> = {
   [EvaluationPhase.PRE_INTERVIEW]: 'Pre',

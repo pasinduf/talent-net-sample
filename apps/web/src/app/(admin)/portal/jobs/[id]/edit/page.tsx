@@ -13,36 +13,8 @@ import {
   JobStatus,
 } from '@talent-net/types';
 import { useConfirmModal } from '@/components/ui/ConfirmModal';
+import { API, authHeaders, fetcher } from '@/lib/api';
 
-const API = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-function authHeaders() {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('tn_token') : null;
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  } as Record<string, string>;
-}
-
-function fetcher(url: string) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('tn_token') : null;
-  return fetch(url, {
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-  }).then((r) => r.json());
-}
-
-async function apiCall(url: string, body?: unknown, method = 'POST') {
-  const res = await fetch(url, {
-    method,
-    headers: authHeaders(),
-    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
-  });
-  const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error((json as any)?.error?.message ?? `Server error ${res.status}`);
-  return json;
-}
-
-// ─── Labels ──────────────────────────────────────────────────────────────────
 
 const DEPARTMENTS = [
   'Engineering', 'Design', 'Data & Analytics', 'Infrastructure', 'Marketing',
@@ -73,8 +45,6 @@ const INTERVIEW_TYPE_LABELS: Record<InterviewType, string> = {
   [InterviewType.HYBRID]: 'Hybrid (AI + Manual)',
 };
 
-// ─── Form types ───────────────────────────────────────────────────────────────
-
 interface JobForm {
   title: string;
   department: string;
@@ -94,7 +64,6 @@ interface JobForm {
 const inputCls =
   'w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500';
 
-// ─── UI helpers ───────────────────────────────────────────────────────────────
 
 function Section({
   title,
@@ -139,7 +108,6 @@ function Field({
   );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function EditJobPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -153,8 +121,8 @@ export default function EditJobPage({ params }: { params: Promise<{ id: string }
   const [error, setError] = useState('');
 
   const { confirm, confirmModal } = useConfirmModal();
-
-  // Populate form once job data loads
+  const today = new Date().toISOString().split('T')[0];
+ 
   useEffect(() => {
     if (!job) return;
     setForm({
@@ -247,8 +215,6 @@ export default function EditJobPage({ params }: { params: Promise<{ id: string }
     }
   }
 
-  // ─── Loading / error states ────────────────────────────────────────────────
-
   if (isLoading || !form) {
     return (
       <div className="p-6 flex items-center justify-center min-h-64">
@@ -271,13 +237,11 @@ export default function EditJobPage({ params }: { params: Promise<{ id: string }
   const isReadOnly =
     job.status === JobStatus.CLOSED || job.status === JobStatus.ARCHIVED;
 
-  // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
     <>
     {confirmModal}
     <div className="p-6 max-w-3xl space-y-6">
-      {/* Header */}
       <div className="flex items-center gap-3">
         <Link
           href={`/portal/jobs/${id}`}
@@ -301,7 +265,6 @@ export default function EditJobPage({ params }: { params: Promise<{ id: string }
         </div>
       )}
 
-      {/* Basic Information */}
       <Section title="Basic Information">
         <Field label="Job Title" required>
           <input
@@ -375,13 +338,13 @@ export default function EditJobPage({ params }: { params: Promise<{ id: string }
               value={form.applicationDeadline}
               onChange={(e) => set('applicationDeadline', e.target.value)}
               disabled={isReadOnly}
+              min={today}
               className={inputCls}
             />
           </Field>
         </div>
       </Section>
 
-      {/* Location */}
       <Section title="Location">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="Office Location" required>
@@ -407,7 +370,6 @@ export default function EditJobPage({ params }: { params: Promise<{ id: string }
         </label>
       </Section>
 
-      {/* Salary Range */}
       <Section title="Salary Range" subtitle="Optional — leave blank to hide from the careers portal">
         <div className="grid grid-cols-3 gap-4">
           <Field label="Currency">
@@ -447,7 +409,6 @@ export default function EditJobPage({ params }: { params: Promise<{ id: string }
         </div>
       </Section>
 
-      {/* Interview Stages */}
       <Section title="Interview Stages" subtitle="Select the stages that will be part of this hiring process">
         <div className="grid grid-cols-2 sm:grid-cols-2 gap-2">
           {Object.values(InterviewType).map((v) => {
@@ -483,7 +444,6 @@ export default function EditJobPage({ params }: { params: Promise<{ id: string }
         </div>
       </Section>
 
-      {/* Description */}
       <Section title="Job Description" subtitle="HTML is supported: h2, ul, li, p, strong, em">
         <textarea
           value={form.description}

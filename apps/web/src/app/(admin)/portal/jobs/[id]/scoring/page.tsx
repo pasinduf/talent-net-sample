@@ -1,14 +1,5 @@
 'use client';
 
-/**
- * Scoring Configuration Editor — /portal/jobs/[id]/scoring
- *
- * Sections:
- *  1. Overview (phase weights + thresholds) — editable inline via PATCH /jobs/{jobId}/scoring
- *  2. Evaluation Dimensions — add / remove / inline-edit weight
- *  3. Knockout Rules — add / remove
- */
-
 import { useState, useCallback } from 'react';
 import { use } from 'react';
 import Link from 'next/link';
@@ -23,37 +14,8 @@ import {
   KnockoutAction,
 } from '@talent-net/types';
 
-const API = process.env.NEXT_PUBLIC_API_BASE_URL;
+import { API, fetcher, apiCall } from '@/lib/api';
 
-// ─── Shared helpers ───────────────────────────────────────────────────────────
-
-function authHeaders() {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('tn_token') : null;
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  } as Record<string, string>;
-}
-
-function fetcher(url: string) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('tn_token') : null;
-  return fetch(url, { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json());
-}
-
-async function apiCall(url: string, body?: unknown, method = 'POST') {
-  const res = await fetch(url, {
-    method,
-    headers: authHeaders(),
-    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
-  });
-  const json = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new Error((json as any)?.error?.message ?? `Server error ${res.status}`);
-  }
-  return json;
-}
-
-// ─── Labels ──────────────────────────────────────────────────────────────────
 
 const PHASE_LABELS: Record<EvaluationPhase, string> = {
   [EvaluationPhase.PRE_INTERVIEW]: 'Pre-Interview',
@@ -91,8 +53,6 @@ const ACTION_COLORS: Record<KnockoutAction, string> = {
   [KnockoutAction.REJECTION_REVIEW]: 'bg-amber-100 text-amber-700',
   [KnockoutAction.MANUAL_REVIEW_REQUIRED]: 'bg-blue-100 text-blue-700',
 };
-
-// ─── Form types ───────────────────────────────────────────────────────────────
 
 interface OverviewForm {
   preInterviewWeight: string;
@@ -136,8 +96,6 @@ const DEFAULT_KNOCKOUT: KnockoutForm = {
 const inputCls = 'w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400';
 const smInputCls = 'px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400';
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
 export default function ScoringConfigPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: jobId } = use(params);
 
@@ -154,29 +112,23 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
   const validation = validationData?.data;
   const templates: any[] = templatesData?.data ?? [];
 
-  // Overview edit state
   const [editingOverview, setEditingOverview] = useState(false);
   const [overviewForm, setOverviewForm] = useState<OverviewForm | null>(null);
 
-  // Add-dimension form state
   const [dimForm, setDimForm] = useState<DimensionForm>(DEFAULT_DIM);
   const [showAddDim, setShowAddDim] = useState(false);
 
-  // Inline-edit dimension state (keyed by dimension id)
   const [editingDimId, setEditingDimId] = useState<string | null>(null);
   const [editingDimForm, setEditingDimForm] = useState<Partial<DimensionForm>>({});
 
   const { confirm, confirmModal } = useConfirmModal();
 
-  // Add-knockout form state
   const [knockoutForm, setKnockoutForm] = useState<KnockoutForm>(DEFAULT_KNOCKOUT);
   const [showAddKnockout, setShowAddKnockout] = useState(false);
 
-  // Inline-edit knockout state (keyed by rule id)
   const [editingKnockoutId, setEditingKnockoutId] = useState<string | null>(null);
   const [editingKnockoutForm, setEditingKnockoutForm] = useState<Partial<KnockoutForm>>({});
 
-  // Template state
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [showSaveTemplateForm, setShowSaveTemplateForm] = useState(false);
   const [templateNameInput, setTemplateNameInput] = useState('');
@@ -187,7 +139,6 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
     mutateTemplates();
   }, [mutate, mutateValidation]);
 
-  // ── Overview: open edit mode ────────────────────────────────────────────────
 
   function openOverviewEdit() {
     if (!config) return;
@@ -230,8 +181,6 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
     }
   }
 
-  // ── Init config ─────────────────────────────────────────────────────────────
-
   async function initConfig() {
     const toastId = toast.loading('Creating scoring configuration…');
     try {
@@ -250,7 +199,6 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
     }
   }
 
-  // ── Dimensions ──────────────────────────────────────────────────────────────
 
   async function addDimension(e: React.FormEvent) {
     e.preventDefault();
@@ -334,8 +282,6 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
     }
   }
 
-  // ── Knockout rules ───────────────────────────────────────────────────────────
-
   async function addKnockoutRule(e: React.FormEvent) {
     e.preventDefault();
     if (!knockoutForm.name.trim() || !knockoutForm.errorMessage.trim()) {
@@ -414,8 +360,6 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
     }
   }
 
-  // ── Templates ────────────────────────────────────────────────────────────
-
   async function saveAsTemplate() {
     if (!templateNameInput.trim()) {
       toast.error('Template name is required.');
@@ -461,7 +405,6 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
     }
   }
 
-  // ─── Render ───────────────────────────────────────────────────────────────
 
   if (!jobData) {
     return <div className="p-6 animate-pulse text-gray-400">Loading…</div>;
@@ -471,7 +414,6 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
     <>
     {confirmModal}
     <div className="p-6 max-w-5xl">
-      {/* Breadcrumb */}
       <nav className="text-sm text-gray-500 mb-6 flex items-center gap-2">
         <Link href="/portal/jobs" className="hover:text-indigo-600">Jobs</Link>
         <span>/</span>
@@ -527,7 +469,6 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
         </div>
       </div>
 
-      {/* Validation errors / warnings */}
       {validation && (validation.errors?.length > 0 || validation.warnings?.length > 0) && (
         <div className="mb-6 space-y-2">
           {validation.errors?.map((e: string, i: number) => (
@@ -543,7 +484,6 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
         </div>
       )}
 
-      {/* ── No config yet ────────────────────────────────────────────────────── */}
       {!config && (
         <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-12 text-center">
           <p className="text-gray-500 mb-2 font-medium">No scoring configuration yet.</p>
@@ -575,7 +515,6 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
       {config && (
         <div className="space-y-6">
 
-          {/* ── Overview ──────────────────────────────────────────────────────── */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-semibold text-gray-900">Configuration Overview</h2>
@@ -621,7 +560,6 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
                   ))}
                 </div>
 
-                {/* Weight progress bar */}
                 <div className="mt-5">
                   <div className="flex justify-between text-xs text-gray-500 mb-1">
                     <span>Dimension weight used</span>
@@ -687,7 +625,6 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
                       onChange={(e) => setOv('manualReviewThreshold', e.target.value)} className={inputCls} />
                   </div>
                 </div>
-                {/* Live sum indicator */}
                 {(() => {
                   const sum = Number(overviewForm.preInterviewWeight) + Number(overviewForm.postInterviewWeight);
                   const ok = Math.abs(sum - 100) < 0.01;
@@ -701,7 +638,6 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
             )}
           </div>
 
-          {/* ── Template status banner ────────────────────────────────────────── */}
           {config.isTemplate && (
             <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
@@ -726,7 +662,6 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
             </div>
           )}
 
-          {/* ── Evaluation Dimensions ──────────────────────────────────────────── */}
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <div>
@@ -746,7 +681,6 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
               </button>
             </div>
 
-            {/* Dimensions table */}
             {config.evaluationDimensions.length === 0 && !showAddDim ? (
               <div className="p-8 text-center text-gray-400 text-sm">
                 No dimensions yet. Click <strong>+ Add Dimension</strong> to get started.
@@ -868,7 +802,6 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
               </table>
             )}
 
-            {/* Add dimension form */}
             {showAddDim && (
               <form onSubmit={addDimension} className="p-6 border-t border-gray-100 bg-gray-50">
                 <h3 className="text-sm font-semibold text-gray-700 mb-3">New Evaluation Dimension</h3>
@@ -937,7 +870,6 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
             )}
           </div>
 
-          {/* ── Knockout Rules ─────────────────────────────────────────────────── */}
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <div>
@@ -1066,7 +998,6 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
               </table>
             )}
 
-            {/* Add knockout rule form */}
             {showAddKnockout && (
               <form onSubmit={addKnockoutRule} className="p-6 border-t border-gray-100 bg-gray-50">
                 <h3 className="text-sm font-semibold text-gray-700 mb-3">New Knockout Rule</h3>
@@ -1124,7 +1055,6 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
       )}
     </div>
 
-    {/* ── Save as template modal ───────────────────────────────────────────── */}
     {showSaveTemplateForm && (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
@@ -1167,7 +1097,6 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
       </div>
     )}
 
-    {/* ── Template picker modal ─────────────────────────────────────────────── */}
     {showTemplateModal && (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
@@ -1175,7 +1104,6 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
           onClick={() => setShowTemplateModal(false)}
         />
         <div className="relative z-10 w-full max-w-2xl bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[85vh]">
-          {/* Header */}
           <div className="p-6 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
             <div>
               <h2 className="text-lg font-semibold text-gray-900">Apply a Scoring Template</h2>
@@ -1189,7 +1117,6 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
             </button>
           </div>
 
-          {/* Body */}
           <div className="p-6 overflow-y-auto flex-1">
             {!templatesData ? (
               <div className="text-center text-gray-400 animate-pulse py-8">Loading templates…</div>
@@ -1246,7 +1173,6 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
             )}
           </div>
 
-          {/* Footer */}
           <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between flex-shrink-0">
             <Link
               href="/portal/scoring/templates"

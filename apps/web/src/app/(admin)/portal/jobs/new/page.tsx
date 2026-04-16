@@ -1,20 +1,5 @@
 'use client';
 
-/**
- * /portal/jobs/new — Multi-step Create Job wizard
- *
- * Step 1 – Role Details      (title, description, type, level, location, salary, deadline, headcount, interview stages)
- * Step 2 – Application Form  (screening questions per QuestionType)
- * Step 3 – Scoring Config    (phase weights, thresholds, evaluation dimensions, knockout rules)
- * Step 4 – Review & Publish  (summary + save draft / publish)
- *
- * On "Save as Draft" / "Publish":
- *   1. POST /jobs               → creates the job (returns id)
- *   2. POST /jobs/:id/screening  → bulk-creates screening questions (if any)
- *   3. POST /jobs/:id/scoring    → creates scoring config with dimensions + knockout rules (if any)
- *   4. POST /jobs/:id/publish    → only when "Publish Now" is chosen
- */
-
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -30,21 +15,9 @@ import {
   KnockoutCondition,
   KnockoutAction,
 } from '@talent-net/types';
+import { API, authHeaders } from '@/lib/api';
 
-// ─── Constants & Labels ──────────────────────────────────────────────────────
 
-const API = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-function authHeaders() {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('tn_token') : null;
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  } as Record<string, string>;
-}
-
-/** Extracts a human-readable error message from an API response body.
- *  For Zod validation errors, formats the field-level details inline. */
 function extractApiError(body: any, status: number): string {
   const err = body?.error;
   if (!err) return `Server error ${status}`;
@@ -126,15 +99,15 @@ const KNOCKOUT_CONDITION_LABELS: Record<KnockoutCondition, string> = {
   [KnockoutCondition.CUSTOM]: 'Custom Rule',
 };
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+const today = new Date().toISOString().split('T')[0];
 
 interface ScreeningQuestionDraft {
-  _id: string; // local only
+  _id: string;
   question: string;
   type: QuestionType;
   isRequired: boolean;
   isKnockout: boolean;
-  options: string; // comma-separated for choice types
+  options: string;
   helpText: string;
 }
 
@@ -229,8 +202,6 @@ export default function NewJobPage() {
 
   const [stepError, setStepError] = useState('');
   const [saving, setSaving] = useState(false);
-
-  // ── validation ──────────────────────────────────────────────────────────────
 
   function validateStep1(): string {
     if (!role.title.trim()) return 'Job title is required.';
@@ -396,8 +367,6 @@ export default function NewJobPage() {
       setSaving(false);
     }
   }
-
-  // ── rendering ───────────────────────────────────────────────────────────────
 
   return (
     <div className="p-6 max-w-4xl">
@@ -593,6 +562,7 @@ function StepRoleDetails({ form, onChange }: { form: RoleForm; onChange: (f: Rol
               type="date"
               value={form.applicationDeadline}
               onChange={(e) => set('applicationDeadline', e.target.value)}
+              min={today}
               className={inputCls}
             />
           </Field>

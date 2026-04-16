@@ -52,9 +52,9 @@ export function JobCard({ job }: JobCardProps) {
           <div className="flex flex-wrap gap-3 text-sm text-gray-500 mt-1">
             <span>{job.department}</span>
             <span>·</span>
-            <span>{job.location}{job.isRemote ? ' / Remote' : ''}</span>
+            <span>{job.location}</span>
             <span>·</span>
-            <span className="capitalize">{job.level.replace('_', ' ')}</span>
+            <span className="capitalize">{job.level?.replace('_', ' ')}</span>
             {job.salaryMin && job.salaryMax && (
               <>
                 <span>·</span>

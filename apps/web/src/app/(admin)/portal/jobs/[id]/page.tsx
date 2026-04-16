@@ -14,34 +14,7 @@ import {
   InterviewType,
   QuestionType,
 } from '@talent-net/types';
-
-const API = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-function authHeaders() {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('tn_token') : null;
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  } as Record<string, string>;
-}
-
-function fetcher(url: string) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('tn_token') : null;
-  return fetch(url, {
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-  }).then((r) => r.json());
-}
-
-async function apiCall(url: string, body?: unknown, method = 'POST') {
-  const res = await fetch(url, {
-    method,
-    headers: authHeaders(),
-    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
-  });
-  const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error((json as any)?.error?.message ?? `Server error ${res.status}`);
-  return json;
-}
+import { API, fetcher, apiCall } from '@/lib/api';
 
 const inputCls =
   'w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500';
@@ -166,7 +139,6 @@ function OptionsEditor({ value, onChange }: { value: string[]; onChange: (v: str
   );
 }
 
-// ─── Helper components ────────────────────────────────────────────────────────
 
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -186,8 +158,6 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
 export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
@@ -203,13 +173,11 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
   const { confirm, confirmModal } = useConfirmModal();
 
-  // Screening question state
   const [showAddQuestion, setShowAddQuestion] = useState(false);
   const [addForm, setAddForm] = useState<QuestionForm>(DEFAULT_QUESTION);
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
   const [editingForm, setEditingForm] = useState<QuestionForm>(DEFAULT_QUESTION);
 
-  // ── Screening helpers ──────────────────────────────────────────────────────
 
   function parseOptions(csv: string): string[] | null {
     const arr = csv.split(',').map((s) => s.trim()).filter(Boolean);
@@ -412,9 +380,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           </div>
         </div>
 
-        {/* Action buttons */}
         <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
-          {/* Edit — only for non-terminal states */}
           {status !== JobStatus.ARCHIVED && (
             <Link
               href={`/portal/jobs/${id}/edit`}
@@ -424,7 +390,6 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             </Link>
           )}
 
-          {/* Duplicate — always available */}
           <button
             onClick={() => runAction('duplicate')}
             className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
@@ -432,7 +397,6 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             Duplicate
           </button>
 
-          {/* DRAFT → Publish */}
           {status === JobStatus.DRAFT && (
             <button
               onClick={() => runAction('publish')}
@@ -442,7 +406,6 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             </button>
           )}
 
-          {/* PUBLISHED → Pause */}
           {status === JobStatus.PUBLISHED && (
             <button
               onClick={() => runAction('pause')}
@@ -452,7 +415,6 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             </button>
           )}
 
-          {/* PAUSED → Reopen */}
           {status === JobStatus.PAUSED && (
             <button
               onClick={() => runAction('reopen')}
@@ -462,7 +424,6 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             </button>
           )}
 
-          {/* PUBLISHED | PAUSED → Close */}
           {(status === JobStatus.PUBLISHED || status === JobStatus.PAUSED) && (
             <button
               onClick={() => runAction('close')}
@@ -484,11 +445,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
         </div>
       </div>
 
-      {/* Two-column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column — main details */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Role Details */}
           <Section title="Role Details">
             <div className="space-y-3">
               <InfoRow label="Department" value={job.department} />
@@ -518,14 +476,12 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             </div>
           </Section>
 
-          {/* Description */}
           <Section title="Job Description">
             <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
               {job.description}
             </p>
           </Section>
 
-          {/* Screening questions */}
           {(() => {
             const isReadOnly = status === JobStatus.CLOSED || status === JobStatus.ARCHIVED;
             return (
@@ -552,7 +508,6 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   )}
                 </div>
 
-                {/* Question list */}
                 {questions.length === 0 && !showAddQuestion ? (
                   <p className="px-5 py-8 text-center text-sm text-gray-400">No screening questions yet.</p>
                 ) : questions.length > 0 && (
@@ -683,7 +638,6 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   </ul>
                 )}
 
-                {/* Add question form */}
                 {showAddQuestion && (
                   <form onSubmit={addQuestion} className="px-5 py-4 border-t border-gray-100 bg-gray-50 space-y-3">
                     <h4 className="text-xs font-semibold text-gray-700">New Question</h4>
@@ -759,9 +713,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           })()}
         </div>
 
-        {/* Right column — sidebar */}
         <div className="space-y-6">
-          {/* Interview stages */}
           <Section title="Interview Stages">
             {job.interviewTypes?.length > 0 ? (
               <ul className="space-y-2">
@@ -777,7 +729,6 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             )}
           </Section>
 
-          {/* Scoring summary */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-semibold text-gray-900">Scoring Configuration</h2>
@@ -816,7 +767,6 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             )}
           </div>
 
-          {/* Meta */}
           <Section title="Metadata">
             <div className="space-y-2">
               <InfoRow label="Created by" value={job.createdBy?.fullName ?? '—'} />

@@ -58,15 +58,9 @@ export default async function CareersPage({ searchParams }: PageProps) {
 
   let jobs: typeof MOCK_JOBS = [];
   let total = 0;
-  try {
-   // const jobsData = await publicApi.listJobs(qs);
-    jobs = filterMockJobs(MOCK_JOBS, params); //jobsData.data ?? [];
-    total = jobs.length //jobsData.meta?.total ?? jobs.length;
-  } catch {
-    // API unavailable — fall back to mock data
-    jobs = filterMockJobs(MOCK_JOBS, params);
-    total = jobs.length;
-  }
+  const jobsData = await publicApi.listJobs(qs);
+  jobs = jobsData.data ?? []; //filterMockJobs(MOCK_JOBS, params);
+  total = jobsData.meta?.total ?? jobs.length; //jobs.length;
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
