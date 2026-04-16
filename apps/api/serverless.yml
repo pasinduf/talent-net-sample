@@ -197,6 +197,13 @@ functions:
           method: GET
 
   # ─── Scoring Configuration ─────────────────────────────────────────────────
+  deleteScoringConfig:
+    handler: src/functions/scoring/deleteConfig.handler
+    events:
+      - httpApi:
+          path: /jobs/{jobId}/scoring
+          method: DELETE
+
   createScoringConfig:
     handler: src/functions/scoring/create.handler
     events:

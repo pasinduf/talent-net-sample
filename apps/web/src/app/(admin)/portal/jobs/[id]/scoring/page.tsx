@@ -147,10 +147,12 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
     `${API}/jobs/${jobId}/scoring/validate`,
     fetcher
   );
+  const { data: templatesData, mutate: mutateTemplates } = useSWR(`${API}/scoring/templates`, fetcher);
 
   const job = jobData?.data;
   const config = configData?.data;
   const validation = validationData?.data;
+  const templates: any[] = templatesData?.data ?? [];
 
   // Overview edit state
   const [editingOverview, setEditingOverview] = useState(false);
@@ -174,9 +176,15 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
   const [editingKnockoutId, setEditingKnockoutId] = useState<string | null>(null);
   const [editingKnockoutForm, setEditingKnockoutForm] = useState<Partial<KnockoutForm>>({});
 
+  // Template state
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [showSaveTemplateForm, setShowSaveTemplateForm] = useState(false);
+  const [templateNameInput, setTemplateNameInput] = useState('');
+
   const refresh = useCallback(() => {
     mutate();
     mutateValidation();
+    mutateTemplates();
   }, [mutate, mutateValidation]);
 
   // ── Overview: open edit mode ────────────────────────────────────────────────
@@ -406,6 +414,53 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
     }
   }
 
+  // ── Templates ────────────────────────────────────────────────────────────
+
+  async function saveAsTemplate() {
+    if (!templateNameInput.trim()) {
+      toast.error('Template name is required.');
+      return;
+    }
+    const toastId = toast.loading('Saving as template…');
+    try {
+      await apiCall(`${API}/jobs/${jobId}/scoring`, {
+        isTemplate: true,
+        templateName: templateNameInput.trim(),
+      }, 'PATCH');
+      toast.success('Saved as template!', { id: toastId });
+      setShowSaveTemplateForm(false);
+      refresh();
+    } catch (err: any) {
+      toast.error(err?.message ?? 'Failed to save template.', { id: toastId });
+    }
+  }
+
+  async function applyTemplateToJob(templateId: string, templateName: string) {
+    setShowTemplateModal(false);
+    const hasConfig = !!config;
+    if (hasConfig) {
+      const ok = await confirm({
+        title: 'Replace scoring configuration?',
+        description: `This will replace the current configuration with "${templateName}". All existing dimensions and knockout rules will be removed.`,
+        confirmLabel: 'Replace',
+        variant: 'danger',
+      });
+      if (!ok) return;
+    }
+    const toastId = toast.loading('Applying template…');
+    try {
+      await apiCall(
+        `${API}/jobs/${jobId}/scoring/apply-template/${templateId}`,
+        { replace: hasConfig }
+      );
+      toast.success(`Template "${templateName}" applied!`, { id: toastId });
+      setShowTemplateModal(false);
+      refresh();
+    } catch (err: any) {
+      toast.error(err?.message ?? 'Failed to apply template.', { id: toastId });
+    }
+  }
+
   // ─── Render ───────────────────────────────────────────────────────────────
 
   if (!jobData) {
@@ -425,7 +480,7 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
         <span className="text-gray-800">Scoring</span>
       </nav>
 
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex items-start justify-between mb-6 gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Scoring & Evaluation</h1>
           <p className="text-sm text-gray-500 mt-1">
@@ -434,17 +489,42 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
           </p>
         </div>
 
-        {validation && (
-          <div className={clsx(
-            'px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 flex-shrink-0',
-            validation.isReadyToPublish
-              ? 'bg-green-50 text-green-700 border border-green-200'
-              : 'bg-amber-50 text-amber-700 border border-amber-200'
-          )}>
-            <span>{validation.isReadyToPublish ? '✓' : '⚠'}</span>
-            {validation.isReadyToPublish ? 'Ready to publish' : 'Needs attention'}
-          </div>
-        )}
+        <div className="flex items-center gap-2 flex-wrap justify-end flex-shrink-0">
+          <button
+            onClick={() => setShowTemplateModal(true)}
+            className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 font-medium text-gray-700 flex items-center gap-1.5"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25Z" />
+            </svg>
+            Apply Template
+          </button>
+          {config && (
+            <button
+              onClick={() => {
+                setTemplateNameInput(config.templateName ?? '');
+                setShowSaveTemplateForm(true);
+              }}
+              className="px-3 py-1.5 text-sm border border-indigo-300 text-indigo-700 bg-indigo-50 rounded-lg hover:bg-indigo-100 font-medium flex items-center gap-1.5"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
+              </svg>
+              {config.isTemplate ? 'Update Template' : 'Save as Template'}
+            </button>
+          )}
+          {validation && (
+            <div className={clsx(
+              'px-3 py-1.5 rounded-xl text-sm font-medium flex items-center gap-2',
+              validation.isReadyToPublish
+                ? 'bg-green-50 text-green-700 border border-green-200'
+                : 'bg-amber-50 text-amber-700 border border-amber-200'
+            )}>
+              <span>{validation.isReadyToPublish ? '✓' : '⚠'}</span>
+              {validation.isReadyToPublish ? 'Ready to publish' : 'Needs attention'}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Validation errors / warnings */}
@@ -468,14 +548,27 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
         <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-12 text-center">
           <p className="text-gray-500 mb-2 font-medium">No scoring configuration yet.</p>
           <p className="text-sm text-gray-400 mb-6">
-            Start with sensible defaults — you can adjust thresholds and add dimensions afterwards.
+            Start from scratch with sensible defaults, or apply a saved template.
           </p>
-          <button
-            onClick={initConfig}
-            className="px-6 py-2.5 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors"
-          >
-            Create Scoring Configuration
-          </button>
+          <div className="flex items-center justify-center gap-3 flex-wrap">
+            <button
+              onClick={initConfig}
+              className="px-6 py-2.5 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors"
+            >
+              Create from Scratch
+            </button>
+            {templates.length > 0 && (
+              <>
+                <span className="text-gray-400 text-sm">or</span>
+                <button
+                  onClick={() => setShowTemplateModal(true)}
+                  className="px-6 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors"
+                >
+                  Apply Template ({templates.length})
+                </button>
+              </>
+            )}
+          </div>
         </div>
       )}
 
@@ -607,6 +700,31 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
               </div>
             )}
           </div>
+
+          {/* ── Template status banner ────────────────────────────────────────── */}
+          {config.isTemplate && (
+            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <svg className="w-5 h-5 text-indigo-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
+                </svg>
+                <div>
+                  <p className="text-sm font-semibold text-indigo-900">
+                    Saved as template: <span className="font-bold">{config.templateName}</span>
+                  </p>
+                  <p className="text-xs text-indigo-600 mt-0.5">
+                    This configuration can be reused across other jobs.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => { setTemplateNameInput(config.templateName ?? ''); setShowSaveTemplateForm(true); }}
+                className="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex-shrink-0"
+              >
+                Rename
+              </button>
+            </div>
+          )}
 
           {/* ── Evaluation Dimensions ──────────────────────────────────────────── */}
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -1005,6 +1123,148 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
         </div>
       )}
     </div>
+
+    {/* ── Save as template modal ───────────────────────────────────────────── */}
+    {showSaveTemplateForm && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div
+          className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
+          onClick={() => setShowSaveTemplateForm(false)}
+        />
+        <div className="relative z-10 w-full max-w-md bg-white rounded-2xl shadow-xl p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-1">
+            {config?.isTemplate ? 'Rename Template' : 'Save as Template'}
+          </h2>
+          <p className="text-sm text-gray-500 mb-5">
+            Templates can be applied to any job. Saving does not affect this job's configuration.
+          </p>
+          <input
+            className={inputCls}
+            placeholder="e.g. Senior Engineering Role"
+            value={templateNameInput}
+            onChange={(e) => setTemplateNameInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') saveAsTemplate();
+              if (e.key === 'Escape') setShowSaveTemplateForm(false);
+            }}
+            autoFocus
+          />
+          <div className="mt-4 flex justify-end gap-3">
+            <button
+              onClick={() => setShowSaveTemplateForm(false)}
+              className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={saveAsTemplate}
+              className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium"
+            >
+              {config?.isTemplate ? 'Rename Template' : 'Save Template'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* ── Template picker modal ─────────────────────────────────────────────── */}
+    {showTemplateModal && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div
+          className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
+          onClick={() => setShowTemplateModal(false)}
+        />
+        <div className="relative z-10 w-full max-w-2xl bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[85vh]">
+          {/* Header */}
+          <div className="p-6 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">Apply a Scoring Template</h2>
+              <p className="text-sm text-gray-500 mt-0.5">Select a saved template to apply to this job</p>
+            </div>
+            <button
+              onClick={() => setShowTemplateModal(false)}
+              className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* Body */}
+          <div className="p-6 overflow-y-auto flex-1">
+            {!templatesData ? (
+              <div className="text-center text-gray-400 animate-pulse py-8">Loading templates…</div>
+            ) : templates.length === 0 ? (
+              <div className="text-center text-gray-400 py-8">
+                <p className="font-medium mb-1">No templates saved yet.</p>
+                <p className="text-sm">
+                  Set up a scoring configuration for any job and click{' '}
+                  <strong>Save as Template</strong> to reuse it here.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {templates.map((t: any) => (
+                  <div
+                    key={t.id}
+                    className="border border-gray-200 rounded-xl p-4 hover:border-indigo-300 hover:bg-indigo-50/30 transition-colors"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900">{t.templateName}</h3>
+                        <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5 text-xs text-gray-500">
+                          <span>{t.dimensionCount} dimension{t.dimensionCount !== 1 ? 's' : ''}</span>
+                          <span>·</span>
+                          <span>{t.knockoutRuleCount} knockout rule{t.knockoutRuleCount !== 1 ? 's' : ''}</span>
+                          <span>·</span>
+                          <span>Pre: {t.preInterviewWeight}% / Post: {t.postInterviewWeight}%</span>
+                          <span>·</span>
+                          <span>Shortlist ≥ {t.shortlistThreshold}%</span>
+                        </div>
+                        {t.evaluationDimensions?.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            {t.evaluationDimensions.map((d: any, i: number) => (
+                              <span
+                                key={i}
+                                className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full"
+                              >
+                                {d.name} {d.weight}%
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => applyTemplateToJob(t.id, t.templateName)}
+                        className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium whitespace-nowrap flex-shrink-0"
+                      >
+                        Apply
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between flex-shrink-0">
+            <Link
+              href="/portal/scoring/templates"
+              className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+              onClick={() => setShowTemplateModal(false)}
+            >
+              Manage all templates →
+            </Link>
+            <button
+              onClick={() => setShowTemplateModal(false)}
+              className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-white"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     </>
   );
 }

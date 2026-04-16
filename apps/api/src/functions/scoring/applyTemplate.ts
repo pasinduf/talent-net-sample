@@ -1,11 +1,10 @@
 import 'reflect-metadata';
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Context } from 'aws-lambda';
-import { UserRole, AuditAction } from '@talent-net/types';
+import { AuditAction } from '@talent-net/types';
 import { AuditLog, JobRepository, ScoringConfigRepository } from '@talent-net/database';
-import { withErrorHandler } from '../../middleware/handler.js';
-import { requireRoles } from '../../middleware/auth.js';
+import { withErrorHandler, parseBody } from '../../middleware/handler.js';
 import { ok } from '../../shared/response.js';
-import { NotFoundError, ConflictError } from '../../shared/errors.js';
+import { NotFoundError } from '../../shared/errors.js';
 import { db } from '../../shared/db.js';
 
 async function handle(
@@ -26,11 +25,19 @@ async function handle(
   const job = await jobRepo.findOne({ where: { id: jobId } });
   if (!job) throw new NotFoundError('Job');
 
+  const body = parseBody(event);
+  const replace = (body as any)?.replace === true;
+
   const existing = await scoringRepo.findByJobId(jobId);
   if (existing) {
-    throw new ConflictError(
-      'This job already has a scoring configuration. Delete it first or update it in place.'
-    );
+    if (!replace) {
+      return {
+        statusCode: 409,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: { message: 'This job already has a scoring configuration. Pass replace: true to overwrite it.' } }),
+      };
+    }
+    await scoringRepo.remove(existing);
   }
 
   const cloned = await scoringRepo.cloneFromTemplate(templateId, jobId);

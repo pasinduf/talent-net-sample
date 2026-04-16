@@ -14,7 +14,9 @@
       "Bash(cmd /c \"taskkill /PID 24816 /F\")",
       "Bash(cmd //c \"taskkill /PID 24816 /F\")",
       "Bash(PGPASSWORD=root \"/c/Program Files/PostgreSQL/16/bin/psql\" -U postgres -h localhost -d talentnet -c \"SELECT id, email FROM users LIMIT 5;\")",
-      "Bash(grep -n \"requireRoles\" c:/Users/pasin/talent-net/apps/api/src/functions/scoring/*.ts)"
+      "Bash(grep -n \"requireRoles\" c:/Users/pasin/talent-net/apps/api/src/functions/scoring/*.ts)",
+      "Bash(xargs grep *)",
+      "Bash(xargs ls *)"
     ]
   }
 }

@@ -8,6 +8,7 @@ import { Toaster } from 'sonner';
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/portal/dashboard', icon: '⊞' },
   { label: 'Jobs', href: '/portal/jobs', icon: '📋' },
+  { label: 'Scoring Templates', href: '/portal/scoring/templates', icon: '⭐' },
   { label: 'Applications', href: '/portal/applications', icon: '📥' },
   { label: 'Candidates', href: '/portal/candidates', icon: '👤' },
   { label: 'Interviews', href: '/portal/interviews', icon: '🎙️' },
