@@ -33,6 +33,14 @@ export class AuditLog {
   entityId!: string | null;
 
   /**
+   * The job this audit event is associated with.
+   * Null for actions not related to a specific job (e.g. user management).
+   */
+  @Column({ type: 'uuid', nullable: true })
+  @Index()
+  jobId!: string | null;
+
+  /**
    * The internal user who performed the action.
    * Null for system-automated actions.
    */

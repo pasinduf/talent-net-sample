@@ -1,6 +1,6 @@
 'use client';
 
-import { use } from 'react';
+import { use, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
@@ -17,12 +17,34 @@ import {
 
 const API = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+function authHeaders() {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('tn_token') : null;
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  } as Record<string, string>;
+}
+
 function fetcher(url: string) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('tn_token') : null;
   return fetch(url, {
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
   }).then((r) => r.json());
 }
+
+async function apiCall(url: string, body?: unknown, method = 'POST') {
+  const res = await fetch(url, {
+    method,
+    headers: authHeaders(),
+    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((json as any)?.error?.message ?? `Server error ${res.status}`);
+  return json;
+}
+
+const inputCls =
+  'w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500';
 
 // ─── Labels ──────────────────────────────────────────────────────────────────
 
@@ -72,11 +94,77 @@ const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
   [QuestionType.YES_NO]: 'Yes / No',
   [QuestionType.SINGLE_CHOICE]: 'Single choice',
   [QuestionType.MULTI_CHOICE]: 'Multiple choice',
-  [QuestionType.NUMERIC]: 'Number',
-  [QuestionType.DATE]: 'Date',
-  [QuestionType.FILE_UPLOAD]: 'File upload',
-  [QuestionType.VIDEO_RESPONSE]: 'Video response',
 };
+
+const CHOICE_TYPES = [QuestionType.SINGLE_CHOICE, QuestionType.MULTI_CHOICE];
+
+interface QuestionForm {
+  question: string;
+  type: QuestionType;
+  isRequired: boolean;
+  isKnockout: boolean;
+  options: string[];
+  knockoutAnswers: string;
+  helpText: string;
+}
+
+const DEFAULT_QUESTION: QuestionForm = {
+  question: '',
+  type: QuestionType.TEXT,
+  isRequired: false,
+  isKnockout: false,
+  options: [],
+  knockoutAnswers: '',
+  helpText: '',
+};
+
+// ─── Options editor ───────────────────────────────────────────────────────────
+
+function OptionsEditor({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
+  const [input, setInput] = useState('');
+
+  function add() {
+    const trimmed = input.trim();
+    if (!trimmed || value.includes(trimmed)) return;
+    onChange([...value, trimmed]);
+    setInput('');
+  }
+
+  return (
+    <div className="space-y-1.5">
+      {value.map((opt, i) => (
+        <div key={i} className="flex items-center gap-2">
+          <span className="flex-1 px-2.5 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-800 truncate">
+            {opt}
+          </span>
+          <button
+            type="button"
+            onClick={() => onChange(value.filter((_, j) => j !== i))}
+            className="text-gray-400 hover:text-red-500 text-lg leading-none px-1 flex-shrink-0"
+          >
+            ×
+          </button>
+        </div>
+      ))}
+      <div className="flex gap-2">
+        <input
+          className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          placeholder="Type an option and press + or Enter"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); add(); } }}
+        />
+        <button
+          type="button"
+          onClick={add}
+          className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium flex-shrink-0"
+        >
+          +
+        </button>
+      </div>
+    </div>
+  );
+}
 
 // ─── Helper components ────────────────────────────────────────────────────────
 
@@ -107,7 +195,100 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   const { data, isLoading, mutate } = useSWR(`${API}/jobs/${id}`, fetcher);
   const job: any = data?.data;
 
+  const { data: screeningData, mutate: mutateScreening } = useSWR(
+    `${API}/jobs/${id}/screening`,
+    fetcher
+  );
+  const questions: any[] = screeningData?.data?.questions ?? [];
+
   const { confirm, confirmModal } = useConfirmModal();
+
+  // Screening question state
+  const [showAddQuestion, setShowAddQuestion] = useState(false);
+  const [addForm, setAddForm] = useState<QuestionForm>(DEFAULT_QUESTION);
+  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
+  const [editingForm, setEditingForm] = useState<QuestionForm>(DEFAULT_QUESTION);
+
+  // ── Screening helpers ──────────────────────────────────────────────────────
+
+  function parseOptions(csv: string): string[] | null {
+    const arr = csv.split(',').map((s) => s.trim()).filter(Boolean);
+    return arr.length > 0 ? arr : null;
+  }
+
+  function questionPayload(f: QuestionForm) {
+    return {
+      question: f.question.trim(),
+      type: f.type,
+      isRequired: f.isRequired,
+      isKnockout: f.isKnockout,
+      options: CHOICE_TYPES.includes(f.type) && f.options.length > 0 ? f.options : null,
+      knockoutAnswers: f.isKnockout ? parseOptions(f.knockoutAnswers) : null,
+      helpText: f.helpText.trim() || null,
+    };
+  }
+
+  async function addQuestion(e: React.FormEvent) {
+    e.preventDefault();
+    if (!addForm.question.trim()) { toast.error('Question text is required.'); return; }
+    const toastId = toast.loading('Adding question…');
+    try {
+      await apiCall(`${API}/jobs/${id}/screening/questions`, questionPayload(addForm));
+      toast.success('Question added.', { id: toastId });
+      setAddForm(DEFAULT_QUESTION);
+      setShowAddQuestion(false);
+      mutateScreening();
+    } catch (err: any) {
+      toast.error(err?.message ?? 'Failed to add question.', { id: toastId });
+    }
+  }
+
+  function startEditQuestion(q: any) {
+    setEditingQuestionId(q.id);
+    setEditingForm({
+      question: q.question,
+      type: q.type,
+      isRequired: q.isRequired,
+      isKnockout: q.isKnockout,
+      options: q.options ?? [],
+      knockoutAnswers: (q.knockoutAnswers ?? []).join(', '),
+      helpText: q.helpText ?? '',
+    });
+  }
+
+  async function saveQuestion(questionId: string) {
+    if (!editingForm.question.trim()) { toast.error('Question text is required.'); return; }
+    const toastId = toast.loading('Saving question…');
+    try {
+      await apiCall(
+        `${API}/jobs/${id}/screening/questions/${questionId}`,
+        questionPayload(editingForm),
+        'PATCH'
+      );
+      toast.success('Question updated.', { id: toastId });
+      setEditingQuestionId(null);
+      mutateScreening();
+    } catch (err: any) {
+      toast.error(err?.message ?? 'Failed to update question.', { id: toastId });
+    }
+  }
+
+  async function deleteQuestion(questionId: string, questionText: string) {
+    const ok = await confirm({
+      title: 'Remove question?',
+      description: `"${questionText.slice(0, 80)}${questionText.length > 80 ? '…' : ''}" will be permanently removed.`,
+      confirmLabel: 'Remove',
+    });
+    if (!ok) return;
+    const toastId = toast.loading('Removing question…');
+    try {
+      await apiCall(`${API}/jobs/${id}/screening/questions/${questionId}`, undefined, 'DELETE');
+      toast.success('Question removed.', { id: toastId });
+      mutateScreening();
+    } catch (err: any) {
+      toast.error(err?.message ?? 'Failed to remove question.', { id: toastId });
+    }
+  }
 
   type JobAction = 'publish' | 'pause' | 'close' | 'archive' | 'reopen' | 'duplicate';
 
@@ -345,31 +526,237 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           </Section>
 
           {/* Screening questions */}
-          {job.applicationForm?.screeningQuestions?.length > 0 && (
-            <Section title={`Screening Questions (${job.applicationForm.screeningQuestions.length})`}>
-              <ol className="space-y-3">
-                {job.applicationForm.screeningQuestions.map((q: any, i: number) => (
-                  <li key={q.id} className="flex gap-3">
-                    <span className="text-sm text-gray-400 w-5 flex-shrink-0 pt-0.5">{i + 1}.</span>
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-900">{q.question}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs text-gray-500">
-                          {QUESTION_TYPE_LABELS[q.type as QuestionType] ?? q.type}
-                        </span>
-                        {q.isRequired && (
-                          <span className="text-xs bg-red-50 text-red-600 px-1 rounded">Required</span>
-                        )}
-                        {q.isKnockout && (
-                          <span className="text-xs bg-orange-50 text-orange-600 px-1 rounded">Knockout</span>
-                        )}
-                      </div>
+          {(() => {
+            const isReadOnly = status === JobStatus.CLOSED || status === JobStatus.ARCHIVED;
+            return (
+              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-base font-semibold text-gray-900">
+                      Screening Questions{questions.length > 0 ? ` (${questions.length})` : ''}
+                    </h2>
+                    <p className="text-xs text-gray-500 mt-0.5">Shown to candidates before they apply</p>
+                  </div>
+                  {!isReadOnly && (
+                    <button
+                      onClick={() => { setShowAddQuestion((v) => !v); setAddForm(DEFAULT_QUESTION); }}
+                      className={clsx(
+                        'px-3 py-1.5 text-sm rounded-lg font-medium transition-colors',
+                        showAddQuestion
+                          ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                      )}
+                    >
+                      {showAddQuestion ? 'Cancel' : '+ Add Question'}
+                    </button>
+                  )}
+                </div>
+
+                {/* Question list */}
+                {questions.length === 0 && !showAddQuestion ? (
+                  <p className="px-5 py-8 text-center text-sm text-gray-400">No screening questions yet.</p>
+                ) : questions.length > 0 && (
+                  <ul className="divide-y divide-gray-50">
+                    {questions.map((q: any) => {
+                      const isEditing = editingQuestionId === q.id;
+                      return (
+                        <li key={q.id} className={clsx('px-5 py-4', isEditing && 'bg-indigo-50/40')}>
+                          {isEditing ? (
+                            <div className="space-y-3">
+                              <textarea
+                                rows={2}
+                                className={inputCls}
+                                value={editingForm.question}
+                                onChange={(e) => setEditingForm((f) => ({ ...f, question: e.target.value }))}
+                                placeholder="Question text"
+                              />
+                              <div className="grid grid-cols-2 gap-2">
+                                <select
+                                  className={inputCls}
+                                  value={editingForm.type}
+                                  onChange={(e) => setEditingForm((f) => ({ ...f, type: e.target.value as QuestionType }))}
+                                >
+                                  {Object.entries(QUESTION_TYPE_LABELS).map(([v, l]) => (
+                                    <option key={v} value={v}>{l}</option>
+                                  ))}
+                                </select>
+                                <input
+                                  className={inputCls}
+                                  placeholder="Help text (optional)"
+                                  value={editingForm.helpText}
+                                  onChange={(e) => setEditingForm((f) => ({ ...f, helpText: e.target.value }))}
+                                />
+                              </div>
+                              {CHOICE_TYPES.includes(editingForm.type) && (
+                                <OptionsEditor
+                                  value={editingForm.options}
+                                  onChange={(v) => setEditingForm((f) => ({ ...f, options: v }))}
+                                />
+                              )}
+                              <div className="flex items-center gap-4 flex-wrap">
+                                <label className="flex items-center gap-1.5 text-xs text-gray-700 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={editingForm.isRequired}
+                                    onChange={(e) => setEditingForm((f) => ({ ...f, isRequired: e.target.checked }))}
+                                    className="rounded"
+                                  />
+                                  Required
+                                </label>
+                                <label className="flex items-center gap-1.5 text-xs text-gray-700 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={editingForm.isKnockout}
+                                    onChange={(e) => setEditingForm((f) => ({ ...f, isKnockout: e.target.checked }))}
+                                    className="rounded"
+                                  />
+                                  Knockout
+                                </label>
+                                {editingForm.isKnockout && (
+                                  <textarea
+                                    rows={2}
+                                    className={inputCls}
+                                    placeholder="Knockout answer(s) (comma-separated)"
+                                    value={editingForm.knockoutAnswers}
+                                    onChange={(e) => setEditingForm((f) => ({ ...f, knockoutAnswers: e.target.value }))}
+                                  />
+                                )}
+                                <div className="ml-auto flex gap-2">
+                                  <button
+                                    onClick={() => setEditingQuestionId(null)}
+                                    className="text-xs text-gray-400 hover:text-gray-600"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    onClick={() => saveQuestion(q.id)}
+                                    className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                                  >
+                                    Save
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm text-gray-800">{q.question}</p>
+                                <div className="flex flex-wrap gap-2 mt-1.5">
+                                  <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs">
+                                    {QUESTION_TYPE_LABELS[q.type as QuestionType]}
+                                  </span>
+                                  {q.isRequired && (
+                                    <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs">Required</span>
+                                  )}
+                                  {q.isKnockout && (
+                                    <span className="px-2 py-0.5 bg-red-50 text-red-600 rounded-full text-xs">Knockout</span>
+                                  )}
+                                  {q.options?.length > 0 && (
+                                    <span className="text-xs text-gray-400">{q.options.join(', ')}</span>
+                                  )}
+                                  {q.helpText && (
+                                    <span className="text-xs text-gray-400 italic">{q.helpText}</span>
+                                  )}
+                                </div>
+                              </div>
+                              {!isReadOnly && (
+                                <div className="flex gap-3 flex-shrink-0">
+                                  <button
+                                    onClick={() => startEditQuestion(q)}
+                                    className="text-xs text-indigo-500 hover:text-indigo-700"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => deleteQuestion(q.id, q.question)}
+                                    className="text-xs text-red-400 hover:text-red-600"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+
+                {/* Add question form */}
+                {showAddQuestion && (
+                  <form onSubmit={addQuestion} className="px-5 py-4 border-t border-gray-100 bg-gray-50 space-y-3">
+                    <h4 className="text-xs font-semibold text-gray-700">New Question</h4>
+                    <textarea
+                      required
+                      rows={2}
+                      className={inputCls}
+                      placeholder="e.g. Do you have valid work authorization in Sri Lanka?"
+                      value={addForm.question}
+                      onChange={(e) => setAddForm((f) => ({ ...f, question: e.target.value }))}
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      <select
+                        className={inputCls}
+                        value={addForm.type}
+                        onChange={(e) => setAddForm((f) => ({ ...f, type: e.target.value as QuestionType }))}
+                      >
+                        {Object.entries(QUESTION_TYPE_LABELS).map(([v, l]) => (
+                          <option key={v} value={v}>{l}</option>
+                        ))}
+                      </select>
+                      <input
+                        className={inputCls}
+                        placeholder="Help text (optional)"
+                        value={addForm.helpText}
+                        onChange={(e) => setAddForm((f) => ({ ...f, helpText: e.target.value }))}
+                      />
                     </div>
-                  </li>
-                ))}
-              </ol>
-            </Section>
-          )}
+                    {CHOICE_TYPES.includes(addForm.type) && (
+                      <OptionsEditor
+                        value={addForm.options}
+                        onChange={(v) => setAddForm((f) => ({ ...f, options: v }))}
+                      />
+                    )}
+                    <div className="flex items-center gap-4 flex-wrap">
+                      <label className="flex items-center gap-1.5 text-xs text-gray-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={addForm.isRequired}
+                          onChange={(e) => setAddForm((f) => ({ ...f, isRequired: e.target.checked }))}
+                          className="rounded"
+                        />
+                        Required
+                      </label>
+                      <label className="flex items-center gap-1.5 text-xs text-gray-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={addForm.isKnockout}
+                          onChange={(e) => setAddForm((f) => ({ ...f, isKnockout: e.target.checked }))}
+                          className="rounded"
+                        />
+                        Knockout
+                      </label>
+                      {addForm.isKnockout && (
+                        <input
+                          className={clsx(inputCls, 'w-56')}
+                          placeholder="Knockout answer(s) (comma-separated)"
+                          value={addForm.knockoutAnswers}
+                          onChange={(e) => setAddForm((f) => ({ ...f, knockoutAnswers: e.target.value }))}
+                        />
+                      )}
+                      <button
+                        type="submit"
+                        className="ml-auto px-4 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium"
+                      >
+                        Add
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            );
+          })()}
         </div>
 
         {/* Right column — sidebar */}

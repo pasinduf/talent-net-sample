@@ -43,6 +43,21 @@ function authHeaders() {
   } as Record<string, string>;
 }
 
+/** Extracts a human-readable error message from an API response body.
+ *  For Zod validation errors, formats the field-level details inline. */
+function extractApiError(body: any, status: number): string {
+  const err = body?.error;
+  if (!err) return `Server error ${status}`;
+  const details = err.details as Record<string, string[]> | undefined;
+  if (details && Object.keys(details).length > 0) {
+    const lines = Object.entries(details)
+      .map(([field, msgs]) => `${field}: ${msgs.join(', ')}`)
+      .join(' · ');
+    return `${err.message} — ${lines}`;
+  }
+  return err.message ?? `Server error ${status}`;
+}
+
 const DEPARTMENTS = [
   'Engineering', 'Design', 'Data & Analytics', 'Infrastructure', 'Marketing',
   'Human Resources', 'Finance', 'Sales', 'Operations', 'Legal', 'Product',
@@ -78,10 +93,6 @@ const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
   [QuestionType.YES_NO]: 'Yes / No',
   [QuestionType.SINGLE_CHOICE]: 'Single choice',
   [QuestionType.MULTI_CHOICE]: 'Multiple choice',
-  [QuestionType.NUMERIC]: 'Number',
-  [QuestionType.DATE]: 'Date',
-  [QuestionType.FILE_UPLOAD]: 'File upload',
-  [QuestionType.VIDEO_RESPONSE]: 'Video response',
 };
 
 const PHASE_LABELS: Record<EvaluationPhase, string> = {
@@ -169,7 +180,7 @@ interface RoleForm {
 const ROLE_INIT: RoleForm = {
   title: '', department: '', level: '', employmentType: '',
   headcount: '', location: '', isRemote: false,
-  salaryMin: '', salaryMax: '', salaryCurrency: 'THB',
+  salaryMin: '', salaryMax: '', salaryCurrency: 'LKR',
   applicationDeadline: '', interviewTypes: [], description: '',
 };
 
@@ -283,17 +294,17 @@ export default function NewJobPage() {
           location: role.location.trim(),
           isRemote: role.isRemote,
           headcount: role.headcount ? Number(role.headcount) : undefined,
-          salaryMin: role.salaryMin ? Number(role.salaryMin) : null,
-          salaryMax: role.salaryMax ? Number(role.salaryMax) : null,
-          salaryCurrency: role.salaryCurrency || null,
-          applicationDeadline: role.applicationDeadline || null,
+          salaryMin: role.salaryMin ? Number(role.salaryMin) : undefined,
+          salaryMax: role.salaryMax ? Number(role.salaryMax) : undefined,
+          salaryCurrency: role.salaryCurrency || undefined,
+          applicationDeadline: role.applicationDeadline || undefined,
           interviewTypes: role.interviewTypes,
           description: role.description,
         }),
       });
       if (!jobRes.ok) {
         const body = await jobRes.json().catch(() => ({}));
-        throw new Error((body as any)?.error?.message ?? `Server error ${jobRes.status}`);
+        throw new Error(extractApiError(body, jobRes.status));
       }
       const jobData = await jobRes.json();
       const jobId: string = jobData?.data?.id;
@@ -320,7 +331,7 @@ export default function NewJobPage() {
         });
         if (!screeningRes.ok) {
           const body = await screeningRes.json().catch(() => ({}));
-          throw new Error((body as any)?.error?.message ?? `Failed to save screening questions (${screeningRes.status})`);
+          throw new Error(extractApiError(body, screeningRes.status) || `Failed to save screening questions (${screeningRes.status})`);
         }
       }
 
@@ -359,7 +370,7 @@ export default function NewJobPage() {
       });
       if (!scoringRes.ok) {
         const body = await scoringRes.json().catch(() => ({}));
-        throw new Error((body as any)?.error?.message ?? `Failed to save scoring config (${scoringRes.status})`);
+        throw new Error(extractApiError(body, scoringRes.status) || `Failed to save scoring config (${scoringRes.status})`);
       }
 
       // 4. Publish if requested
@@ -371,7 +382,7 @@ export default function NewJobPage() {
         });
         if (!publishRes.ok) {
           const body = await publishRes.json().catch(() => ({}));
-          throw new Error((body as any)?.error?.message ?? `Failed to publish job (${publishRes.status})`);
+          throw new Error(extractApiError(body, publishRes.status) || `Failed to publish job (${publishRes.status})`);
         }
       }
 

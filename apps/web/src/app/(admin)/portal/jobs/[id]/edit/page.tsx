@@ -12,6 +12,7 @@ import {
   InterviewType,
   JobStatus,
 } from '@talent-net/types';
+import { useConfirmModal } from '@/components/ui/ConfirmModal';
 
 const API = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -28,6 +29,17 @@ function fetcher(url: string) {
   return fetch(url, {
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
   }).then((r) => r.json());
+}
+
+async function apiCall(url: string, body?: unknown, method = 'POST') {
+  const res = await fetch(url, {
+    method,
+    headers: authHeaders(),
+    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((json as any)?.error?.message ?? `Server error ${res.status}`);
+  return json;
 }
 
 // ─── Labels ──────────────────────────────────────────────────────────────────
@@ -139,6 +151,8 @@ export default function EditJobPage({ params }: { params: Promise<{ id: string }
   const [form, setForm] = useState<JobForm | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+
+  const { confirm, confirmModal } = useConfirmModal();
 
   // Populate form once job data loads
   useEffect(() => {
@@ -260,6 +274,8 @@ export default function EditJobPage({ params }: { params: Promise<{ id: string }
   // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
+    <>
+    {confirmModal}
     <div className="p-6 max-w-3xl space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
@@ -498,5 +514,6 @@ export default function EditJobPage({ params }: { params: Promise<{ id: string }
         )}
       </div>
     </div>
+    </>
   );
 }

@@ -70,7 +70,7 @@ export class Job {
   @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
   salaryMax!: number | null;
 
-  @Column({ type: 'varchar', length: 10, nullable: true, default: 'THB' })
+  @Column({ type: 'varchar', length: 10, nullable: true, default: 'LKR' })
   salaryCurrency!: string | null;
 
   @Column({ type: 'timestamp', nullable: true })

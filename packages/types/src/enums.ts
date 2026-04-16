@@ -95,10 +95,6 @@ export enum QuestionType {
   TEXTAREA = 'textarea',
   SINGLE_CHOICE = 'single_choice',
   MULTI_CHOICE = 'multi_choice',
-  FILE_UPLOAD = 'file_upload',
-  VIDEO_RESPONSE = 'video_response',
-  NUMERIC = 'numeric',
-  DATE = 'date',
   YES_NO = 'yes_no',
 }
 

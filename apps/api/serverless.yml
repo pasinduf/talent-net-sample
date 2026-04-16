@@ -289,9 +289,37 @@ functions:
           method: GET
 
   # ─── Screening Questions ────────────────────────────────────────────────────
+  getScreening:
+    handler: src/functions/screening/getScreening.handler
+    events:
+      - httpApi:
+          path: /jobs/{jobId}/screening
+          method: GET
+
   bulkCreateScreeningQuestions:
     handler: src/functions/screening/bulkCreate.handler
     events:
       - httpApi:
           path: /jobs/{jobId}/screening
           method: POST
+
+  addScreeningQuestion:
+    handler: src/functions/screening/addQuestion.handler
+    events:
+      - httpApi:
+          path: /jobs/{jobId}/screening/questions
+          method: POST
+
+  updateScreeningQuestion:
+    handler: src/functions/screening/updateQuestion.handler
+    events:
+      - httpApi:
+          path: /jobs/{jobId}/screening/questions/{questionId}
+          method: PATCH
+
+  deleteScreeningQuestion:
+    handler: src/functions/screening/deleteQuestion.handler
+    events:
+      - httpApi:
+          path: /jobs/{jobId}/screening/questions/{questionId}
+          method: DELETE

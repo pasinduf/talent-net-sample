@@ -16,12 +16,12 @@ const CreateJobSchema = z.object({
   level: z.nativeEnum(ExperienceLevel),
   location: z.string().min(1).max(255),
   isRemote: z.boolean().default(false),
-  applicationDeadline: z.string().optional(),
+  applicationDeadline: z.string().nullable().optional(),
   interviewTypes: z.array(z.nativeEnum(InterviewType)).min(1),
-  headcount: z.number().int().positive().optional(),
-  salaryMin: z.number().positive().optional(),
-  salaryMax: z.number().positive().optional(),
-  salaryCurrency: z.string().length(3).default('LKR'),
+  headcount: z.number().int().positive().nullable().optional(),
+  salaryMin: z.number().positive().nullable().optional(),
+  salaryMax: z.number().positive().nullable().optional(),
+  salaryCurrency: z.string().length(3).nullable().optional().default('LKR'),
 });
 
 async function handle(
@@ -68,6 +68,7 @@ async function handle(
       action: AuditAction.JOB_CREATED,
       entityType: 'Job',
       entityId: saved.id,
+      jobId: saved.id,
       actorId: actor.id,
       newState: { id: saved.id, title: saved.title, status: saved.status },
     })

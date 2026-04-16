@@ -65,6 +65,7 @@ async function handle(
       action: AuditAction.JOB_CREATED,
       entityType: 'Job',
       entityId: savedJob.id,
+      jobId: savedJob.id,
       actorId: actor.id,
       newState: {
         id: savedJob.id,

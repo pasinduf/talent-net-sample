@@ -42,6 +42,7 @@ async function handle(
       action: AuditAction.JOB_CLOSED,
       entityType: 'Job',
       entityId: saved.id,
+      jobId: id,
       actorId: actor.id,
       previousState: { status: previousStatus },
       newState: { status: JobStatus.CLOSED, closedAt: saved.closedAt },

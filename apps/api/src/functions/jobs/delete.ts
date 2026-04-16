@@ -37,6 +37,7 @@ async function handle(
       action: AuditAction.JOB_DELETED,
       entityType: 'Job',
       entityId: job.id,
+      jobId: id,
       actorId: actor.id,
       previousState: { status: job.status, title: job.title },
       newState: { deleted: true },

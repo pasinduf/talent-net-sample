@@ -39,6 +39,7 @@ async function handle(
       action: AuditAction.JOB_PUBLISHED,
       entityType: 'Job',
       entityId: saved.id,
+      jobId: id,
       actorId: actor.id,
       previousState: { status: JobStatus.PAUSED },
       newState: { status: JobStatus.PUBLISHED },
