@@ -83,12 +83,12 @@ export default function DashboardPage() {
             href={item.href}
             className="group bg-white rounded-xl border border-gray-200 p-5 hover:border-indigo-300 hover:shadow-sm transition-all"
           >
-            <span>
+            <div className="flex items-center gap-3">
               <item.icon size={24} />
               <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
                 {item.label}
               </h3>
-            </span>
+            </div>
 
             <p className="text-xs text-gray-500 mt-1">{item.description}</p>
           </Link>
