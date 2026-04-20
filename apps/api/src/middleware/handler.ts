@@ -1,7 +1,7 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Context } from 'aws-lambda';
 import { ZodError } from 'zod';
-import { AppError } from '../shared/errors.js';
-import { error, serverError, badRequest } from '../shared/response.js';
+import { AppError } from '../shared/errors';
+import { error, serverError, badRequest } from '../shared/response';
 import { ErrorCode } from '@talent-net/types';
 
 type HandlerFn = (

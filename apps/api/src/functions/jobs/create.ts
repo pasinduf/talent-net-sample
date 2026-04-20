@@ -3,10 +3,10 @@ import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Context } from 'aws-la
 import { z } from 'zod';
 import { EmploymentType, ExperienceLevel, InterviewType, UserRole, AuditAction } from '@talent-net/types';
 import { Job, ApplicationForm, AuditLog, JobRepository } from '@talent-net/database';
-import { withErrorHandler, parseBody } from '../../middleware/handler.js';
-import { requireRoles } from '../../middleware/auth.js';
-import { created } from '../../shared/response.js';
-import { db } from '../../shared/db.js';
+import { withErrorHandler, parseBody } from '../../middleware/handler';
+import { requireRoles } from '../../middleware/auth';
+import { created } from '../../shared/response';
+import { db } from '../../shared/db';
 
 const CreateJobSchema = z.object({
   title: z.string().min(3).max(255),

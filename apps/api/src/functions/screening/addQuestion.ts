@@ -3,10 +3,10 @@ import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Context } from 'aws-la
 import { z } from 'zod';
 import { QuestionType } from '@talent-net/types';
 import { ApplicationForm, ScreeningQuestion } from '@talent-net/database';
-import { withErrorHandler, parseBody } from '../../middleware/handler.js';
-import { created } from '../../shared/response.js';
-import { NotFoundError } from '../../shared/errors.js';
-import { db } from '../../shared/db.js';
+import { withErrorHandler, parseBody } from '../../middleware/handler';
+import { created } from '../../shared/response';
+import { NotFoundError } from '../../shared/errors';
+import { db } from '../../shared/db';
 
 const AddQuestionSchema = z.object({
   question: z.string().min(1).max(1000),

@@ -177,7 +177,7 @@ export default async function JobDetailPage({ params }: PageProps) {
           </div>
 
           {/* Screening questions preview */}
-          {screeningQuestions.length > 0 && (
+          {/* {screeningQuestions.length > 0 && (
             <div className="rounded-xl border border-gray-200 p-5">
               <h3 className="font-semibold text-gray-800 text-sm uppercase tracking-wide mb-3">
                 Application Questions
@@ -196,7 +196,7 @@ export default async function JobDetailPage({ params }: PageProps) {
                 ))}
               </ul>
             </div>
-          )}
+          )} */}
         </aside>
       </div>
     </div>

@@ -3,11 +3,11 @@ import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Context } from 'aws-la
 import { z } from 'zod';
 import { EmploymentType, ExperienceLevel, InterviewType, UserRole, JobStatus, AuditAction, ErrorCode } from '@talent-net/types';
 import { AuditLog, JobRepository } from '@talent-net/database';
-import { withErrorHandler, parseBody } from '../../middleware/handler.js';
-import { requireRoles } from '../../middleware/auth.js';
-import { ok } from '../../shared/response.js';
-import { NotFoundError, BusinessError } from '../../shared/errors.js';
-import { db } from '../../shared/db.js';
+import { withErrorHandler, parseBody } from '../../middleware/handler';
+import { requireRoles } from '../../middleware/auth';
+import { ok } from '../../shared/response';
+import { NotFoundError, BusinessError } from '../../shared/errors';
+import { db } from '../../shared/db';
 
 const UpdateJobSchema = z.object({
   title: z.string().min(3).max(255).optional(),

@@ -2,16 +2,11 @@ import 'reflect-metadata';
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Context } from 'aws-lambda';
 import { JobStatus } from '@talent-net/types';
 import { JobRepository } from '@talent-net/database';
-import { withErrorHandler } from '../../middleware/handler.js';
-import { ok } from '../../shared/response.js';
-import { NotFoundError } from '../../shared/errors.js';
-import { db } from '../../shared/db.js';
+import { withErrorHandler } from '../../middleware/handler';
+import { ok } from '../../shared/response';
+import { NotFoundError } from '../../shared/errors';
+import { db } from '../../shared/db';
 
-/**
- * Public endpoint — no authentication required.
- * Returns job detail for a published job identified by slug.
- * Used by Next.js SSG for /careers/[slug] pages.
- */
 async function handle(
   event: APIGatewayProxyEventV2,
   _context: Context

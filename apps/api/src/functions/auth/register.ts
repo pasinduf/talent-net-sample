@@ -4,11 +4,11 @@ import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { User } from '@talent-net/database';
 import { UserRole, ErrorCode } from '@talent-net/types';
-import { withErrorHandler, parseBody } from '../../middleware/handler.js';
-import { requireRoles } from '../../middleware/auth.js';
-import { created } from '../../shared/response.js';
-import { ConflictError } from '../../shared/errors.js';
-import { db } from '../../shared/db.js';
+import { parseBody, withErrorHandler,  } from '../../middleware/handler';
+import { requireRoles } from '../../middleware/auth';
+import { created } from '../../shared/response';
+import { ConflictError } from '../../shared/errors';
+import { db } from '../../shared/db';
 
 const RegisterSchema = z.object({
   email: z.string().email(),

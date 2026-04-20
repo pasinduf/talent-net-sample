@@ -3,11 +3,11 @@ import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Context } from 'aws-la
 import { z } from 'zod';
 import { UserRole, AuditAction, KnockoutCondition, KnockoutAction } from '@talent-net/types';
 import { KnockoutRule, AuditLog, ScoringConfigRepository } from '@talent-net/database';
-import { withErrorHandler, parseBody } from '../../middleware/handler.js';
-import { requireRoles } from '../../middleware/auth.js';
-import { created } from '../../shared/response.js';
-import { NotFoundError } from '../../shared/errors.js';
-import { db } from '../../shared/db.js';
+import { withErrorHandler, parseBody } from '../../middleware/handler';
+import { requireRoles } from '../../middleware/auth';
+import { created } from '../../shared/response';
+import { NotFoundError } from '../../shared/errors';
+import { db } from '../../shared/db';
 
 const AddKnockoutRuleSchema = z.object({
   name: z.string().min(1).max(200),

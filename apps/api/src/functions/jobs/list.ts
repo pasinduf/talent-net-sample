@@ -2,10 +2,10 @@ import 'reflect-metadata';
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Context } from 'aws-lambda';
 import { JobStatus, EmploymentType, ExperienceLevel, UserRole } from '@talent-net/types';
 import { JobRepository } from '@talent-net/database';
-import { withErrorHandler, parsePagination } from '../../middleware/handler.js';
-import { requireRoles } from '../../middleware/auth.js';
-import { ok } from '../../shared/response.js';
-import { db } from '../../shared/db.js';
+import { withErrorHandler, parsePagination } from '../../middleware/handler';
+import { requireRoles } from '../../middleware/auth';
+import { ok } from '../../shared/response';
+import { db } from '../../shared/db';
 
 async function handle(
   event: APIGatewayProxyEventV2,

@@ -2,9 +2,9 @@ import 'reflect-metadata';
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Context } from 'aws-lambda';
 import { JobStatus, EmploymentType, ExperienceLevel } from '@talent-net/types';
 import { JobRepository } from '@talent-net/database';
-import { withErrorHandler, parsePagination } from '../../middleware/handler.js';
-import { ok } from '../../shared/response.js';
-import { db } from '../../shared/db.js';
+import { withErrorHandler, parsePagination } from '../../middleware/handler';
+import { ok } from '../../shared/response';
+import { db } from '../../shared/db';
 
 /**
  * Public endpoint — no authentication required.

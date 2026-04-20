@@ -2,8 +2,8 @@ import 'reflect-metadata';
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Context } from 'aws-lambda';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
-import { withErrorHandler, parseBody } from '../../middleware/handler.js';
-import { created } from '../../shared/response.js';
+import { withErrorHandler, parseBody } from '../../middleware/handler';
+import { created } from '../../shared/response';
 
 const RegisterSchema = z.object({
   password: z.string().min(6, 'Password must be at least 8 characters'),

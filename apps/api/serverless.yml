@@ -18,6 +18,11 @@ provider:
     S3_BUCKET_NAME: ${env:S3_BUCKET_NAME,''}
     RESEND_API_KEY: ${env:RESEND_API_KEY,''}
     RESEND_FROM_EMAIL: ${env:RESEND_FROM_EMAIL, 'noreply@talent-net.example.com'}
+    LINKEDIN_CLIENT_ID: ${env:LINKEDIN_CLIENT_ID, ''}
+    LINKEDIN_CLIENT_SECRET: ${env:LINKEDIN_CLIENT_SECRET, ''}
+    CLOUDINARY_CLOUD_NAME: ${env:CLOUDINARY_CLOUD_NAME, ''}
+    CLOUDINARY_API_KEY: ${env:CLOUDINARY_API_KEY, ''}
+    CLOUDINARY_API_SECRET: ${env:CLOUDINARY_API_SECRET, ''}
   # iam:
   #   role:
   #     statements:
@@ -323,3 +328,49 @@ functions:
       - httpApi:
           path: /jobs/{jobId}/screening/questions/{questionId}
           method: DELETE
+
+  # ─── Candidate Auth ─────────────────────────────────────────────────────────
+  candidateLinkedIn:
+    handler: src/functions/auth/candidateLinkedIn.handler
+    events:
+      - httpApi:
+          path: /auth/candidate/linkedin
+          method: POST
+
+  # ─── Uploads ────────────────────────────────────────────────────────────────
+  cloudinarySign:
+    handler: src/functions/uploads/cloudinarySign.handler
+    events:
+      - httpApi:
+          path: /uploads/cloudinary-sign
+          method: POST
+
+  # ─── Applications ───────────────────────────────────────────────────────────
+  submitApplication:
+    handler: src/functions/apply/submit.handler
+    events:
+      - httpApi:
+          path: /public/jobs/{slug}/apply
+          method: POST
+
+  # ─── Candidate Profile ──────────────────────────────────────────────────────
+  getCandidateProfile:
+    handler: src/functions/candidates/me.handler
+    events:
+      - httpApi:
+          path: /candidates/me
+          method: GET
+
+  updateCandidateProfile:
+    handler: src/functions/candidates/updateProfile.handler
+    events:
+      - httpApi:
+          path: /candidates/me
+          method: PATCH
+
+  getCandidateApplications:
+    handler: src/functions/candidates/myApplications.handler
+    events:
+      - httpApi:
+          path: /candidates/me/applications
+          method: GET

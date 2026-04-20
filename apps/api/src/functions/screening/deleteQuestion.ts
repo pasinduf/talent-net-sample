@@ -1,10 +1,10 @@
 import 'reflect-metadata';
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Context } from 'aws-lambda';
 import { ApplicationForm, ScreeningQuestion } from '@talent-net/database';
-import { withErrorHandler } from '../../middleware/handler.js';
-import { ok } from '../../shared/response.js';
-import { NotFoundError } from '../../shared/errors.js';
-import { db } from '../../shared/db.js';
+import { withErrorHandler } from '../../middleware/handler';
+import { ok } from '../../shared/response';
+import { NotFoundError } from '../../shared/errors';
+import { db } from '../../shared/db';
 
 async function handle(
   event: APIGatewayProxyEventV2,

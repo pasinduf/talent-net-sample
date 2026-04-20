@@ -74,10 +74,13 @@ export class JobRepository extends Repository<Job> {
   }
 
   async findBySlug(slug: string): Promise<Job | null> {
-    return this.findOne({
-      where: { slug },
-      relations: ['scoringConfig', 'applicationForm', 'applicationForm.screeningQuestions'],
-    });
+      return this.createQueryBuilder('job')
+        .leftJoinAndSelect('job.scoringConfig', 'scoringConfig')
+        .leftJoinAndSelect('job.applicationForm', 'applicationForm')
+        .leftJoinAndSelect('applicationForm.screeningQuestions', 'screeningQuestions')
+        .where('job.slug = :slug', { slug })
+        .orderBy('screeningQuestions.order')
+        .getOne();
   }
 
   async findWithFullDetail(id: string): Promise<Job | null> {

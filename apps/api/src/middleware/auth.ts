@@ -1,7 +1,7 @@
 import { APIGatewayProxyEventV2 } from 'aws-lambda';
 import jwt from 'jsonwebtoken';
 import { AuthenticatedUser, JwtPayload, UserRole } from '@talent-net/types';
-import { UnauthorizedError } from '../shared/errors.js';
+import { UnauthorizedError } from '../shared/errors';
 
 export function extractBearerToken(event: APIGatewayProxyEventV2): string | null {
   const authHeader = event.headers?.authorization ?? event.headers?.Authorization;

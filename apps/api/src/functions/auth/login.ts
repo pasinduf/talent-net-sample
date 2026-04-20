@@ -5,10 +5,10 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { User } from '@talent-net/database';
 import { JwtPayload } from '@talent-net/types';
-import { withErrorHandler, parseBody } from '../../middleware/handler.js';
-import { ok } from '../../shared/response.js';
-import { UnauthorizedError } from '../../shared/errors.js';
-import { db } from '../../shared/db.js';
+import { withErrorHandler, parseBody } from '../../middleware/handler';
+import { ok } from '../../shared/response';
+import { UnauthorizedError } from '../../shared/errors';
+import { db } from '../../shared/db';
 
 const LoginSchema = z.object({
   email: z.string().email(),

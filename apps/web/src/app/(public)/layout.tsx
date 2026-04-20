@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { Toaster } from 'sonner';
+import { CandidateNav } from '@/components/public/CandidateNav';
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -8,10 +10,8 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           <Link href="/careers" className="text-xl font-bold text-indigo-600 tracking-tight">
             TalentNet
           </Link>
-          <nav className="flex items-center gap-6 text-sm font-medium text-gray-600">
-            {/* <Link href="/careers" className="hover:text-indigo-600 transition-colors">
-              Open Roles
-            </Link> */}
+          <nav className="flex items-center gap-4 text-sm font-medium text-gray-600">
+            <CandidateNav />
             <Link
               href="/portal/dashboard"
               className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
@@ -22,6 +22,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         </div>
       </header>
 
+      <Toaster position="top-right" richColors />
       <main className="flex-1">{children}</main>
 
       <footer className="bg-gray-50 border-t border-gray-200 py-8 mt-16">

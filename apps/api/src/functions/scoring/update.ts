@@ -3,11 +3,11 @@ import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Context } from 'aws-la
 import { z } from 'zod';
 import { UserRole, AuditAction } from '@talent-net/types';
 import { AuditLog, ScoringConfigRepository } from '@talent-net/database';
-import { withErrorHandler, parseBody } from '../../middleware/handler.js';
-import { requireRoles } from '../../middleware/auth.js';
-import { ok } from '../../shared/response.js';
-import { NotFoundError } from '../../shared/errors.js';
-import { db } from '../../shared/db.js';
+import { withErrorHandler, parseBody } from '../../middleware/handler';
+import { requireRoles } from '../../middleware/auth';
+import { ok } from '../../shared/response';
+import { NotFoundError } from '../../shared/errors';
+import { db } from '../../shared/db';
 
 const UpdateScoringConfigSchema = z
   .object({

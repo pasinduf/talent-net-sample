@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { JobStatus, EmploymentType, ExperienceLevel } from '@talent-net/types';
 import { JobStatusBadge } from './JobStatusBadge';
 import { EmploymentTypeBadge } from './EmploymentTypeBadge';
+import { ArrowRight } from 'lucide-react';
 
 interface JobCardProps {
   job: {
@@ -36,7 +37,6 @@ export function JobCard({ job }: JobCardProps) {
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-2">
-            <JobStatusBadge status={job.status} />
             <EmploymentTypeBadge type={job.employmentType} />
             {job.isRemote && (
               <span className="px-2 py-0.5 text-xs font-medium bg-emerald-100 text-emerald-700 rounded-full">
@@ -59,8 +59,8 @@ export function JobCard({ job }: JobCardProps) {
               <>
                 <span>·</span>
                 <span>
-                  {job.salaryCurrency}{' '}
-                  {Number(job.salaryMin).toLocaleString()}–{Number(job.salaryMax).toLocaleString()}
+                  {job.salaryCurrency} {Number(job.salaryMin).toLocaleString()}–
+                  {Number(job.salaryMax).toLocaleString()}
                 </span>
               </>
             )}
@@ -69,12 +69,14 @@ export function JobCard({ job }: JobCardProps) {
 
         <div className="flex-shrink-0 text-right">
           {daysLeft !== null && daysLeft > 0 && (
-            <span className={`text-xs font-medium ${daysLeft <= 7 ? 'text-red-500' : 'text-gray-400'}`}>
+            <span
+              className={`text-xs font-medium ${daysLeft <= 7 ? 'text-red-500' : 'text-gray-400'}`}
+            >
               {daysLeft}d left
             </span>
           )}
-          <div className="mt-2 text-indigo-600 group-hover:translate-x-1 transition-transform text-sm">
-            Apply →
+          <div className="flex items-center gap-1 mt-2 text-indigo-600 group-hover:translate-x-1 transition-transform text-sm">
+            Apply <ArrowRight size={14} />
           </div>
         </div>
       </div>

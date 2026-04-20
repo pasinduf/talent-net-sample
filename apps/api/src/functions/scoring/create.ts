@@ -18,11 +18,11 @@ import {
   JobRepository,
   ScoringConfigRepository,
 } from '@talent-net/database';
-import { withErrorHandler, parseBody } from '../../middleware/handler.js';
-import { requireRoles } from '../../middleware/auth.js';
-import { created } from '../../shared/response.js';
-import { NotFoundError, ConflictError, BusinessError } from '../../shared/errors.js';
-import { db } from '../../shared/db.js';
+import { withErrorHandler, parseBody } from '../../middleware/handler';
+import { requireRoles } from '../../middleware/auth';
+import { created } from '../../shared/response';
+import { NotFoundError, ConflictError, BusinessError } from '../../shared/errors';
+import { db } from '../../shared/db';
 
 const EvaluationDimensionSchema = z.object({
   name: z.string().min(1).max(150),

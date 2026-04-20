@@ -12,10 +12,11 @@ import {
   EvaluationPhase,
   KnockoutCondition,
   KnockoutAction,
+  JobStatus,
 } from '@talent-net/types';
 
 import { API, fetcher, apiCall } from '@/lib/api';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Upload } from 'lucide-react';
 
 
 const PHASE_LABELS: Record<EvaluationPhase, string> = {
@@ -100,7 +101,7 @@ const smInputCls = 'px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:
 export default function ScoringConfigPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: jobId } = use(params);
 
-  const { data: jobData } = useSWR(`${API}/jobs/${jobId}`, fetcher);
+  const { data: jobData, mutate: mutateJob } = useSWR(`${API}/jobs/${jobId}`, fetcher);
   const { data: configData, mutate } = useSWR(`${API}/jobs/${jobId}/scoring`, fetcher);
   const { data: validationData, mutate: mutateValidation } = useSWR(
     `${API}/jobs/${jobId}/scoring/validate`,
@@ -139,6 +140,24 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
     mutateValidation();
     mutateTemplates();
   }, [mutate, mutateValidation]);
+
+  async function publishJob() {
+    const ok = await confirm({
+      title: 'Publish job?',
+      description: `"${job?.title}" will be visible on the careers portal immediately.`,
+      confirmLabel: 'Publish',
+      variant: 'warning',
+    });
+    if (!ok) return;
+    const toastId = toast.loading('Publishing job…');
+    try {
+      await apiCall(`${API}/jobs/${jobId}/publish`, undefined, 'POST');
+      toast.success('Job published successfully.', { id: toastId });
+      mutateJob();
+    } catch (err: any) {
+      toast.error(err?.message ?? 'Failed to publish job.', { id: toastId });
+    }
+  }
 
 
   function openOverviewEdit() {
@@ -467,6 +486,15 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
               {validation.isReadyToPublish ? 'Ready to publish' : 'Needs attention'}
             </div>
           )}
+          {job?.status != JobStatus.PUBLISHED && (
+            <button
+              onClick={publishJob}
+              className="px-3 py-1.5 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors flex items-center gap-1.5"
+            >
+              <Upload size={16} />
+              Publish
+            </button>
+          ) }
         </div>
       </div>
 

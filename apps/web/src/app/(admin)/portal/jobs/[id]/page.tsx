@@ -15,7 +15,7 @@ import {
   QuestionType,
 } from '@talent-net/types';
 import { API, fetcher, apiCall } from '@/lib/api';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Pencil } from 'lucide-react';
 
 const inputCls =
   'w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500';
@@ -351,440 +351,500 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
   return (
     <>
-    {confirmModal}
-    <div className="p-6 max-w-5xl space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <Link href="/portal/jobs" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
-              <ArrowLeft size={13} /> Jobs
-            </Link>
-            <span className="text-gray-300">/</span>
-            <span className="text-sm text-gray-500">{job.department}</span>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900">{job.title}</h1>
-          <div className="flex items-center gap-3 mt-2">
-            <span
-              className={clsx(
-                'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border',
-                STATUS_COLORS[status]
-              )}
-            >
-              {STATUS_LABELS[status]}
-            </span>
-            {job.publishedAt && (
-              <span className="text-xs text-gray-500">
-                Published {new Date(job.publishedAt).toLocaleDateString()}
+      {confirmModal}
+      <div className="p-6 max-w-5xl space-y-6">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3 mb-1">
+              <Link
+                href="/portal/jobs"
+                className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+              >
+                <ArrowLeft size={13} /> Jobs
+              </Link>
+              <span className="text-gray-300">/</span>
+              <span className="text-sm text-gray-500">{job.department}</span>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900">{job.title}</h1>
+            <div className="flex items-center gap-3 mt-2">
+              <span
+                className={clsx(
+                  'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border',
+                  STATUS_COLORS[status]
+                )}
+              >
+                {STATUS_LABELS[status]}
               </span>
+              {job.publishedAt && (
+                <span className="text-xs text-gray-500">
+                  Published {new Date(job.publishedAt).toLocaleDateString()}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
+            {status !== JobStatus.ARCHIVED && (
+              <Link
+                href={`/portal/jobs/${id}/edit`}
+                className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              >
+                Edit
+              </Link>
+            )}
+
+            <button
+              onClick={() => runAction('duplicate')}
+              className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            >
+              Duplicate
+            </button>
+
+            {status === JobStatus.DRAFT && (
+              <button
+                onClick={() => runAction('publish')}
+                className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+              >
+                Publish
+              </button>
+            )}
+
+            {status === JobStatus.PUBLISHED && (
+              <button
+                onClick={() => runAction('pause')}
+                className="px-3 py-1.5 text-sm bg-amber-500 text-white rounded-lg hover:bg-amber-600"
+              >
+                Pause
+              </button>
+            )}
+
+            {status === JobStatus.PAUSED && (
+              <button
+                onClick={() => runAction('reopen')}
+                className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+              >
+                Reopen
+              </button>
+            )}
+
+            {(status === JobStatus.PUBLISHED || status === JobStatus.PAUSED) && (
+              <button
+                onClick={() => runAction('close')}
+                className="px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                Close
+              </button>
+            )}
+
+            {/* CLOSED → Archive */}
+            {status === JobStatus.CLOSED && (
+              <button
+                onClick={() => runAction('archive')}
+                className="px-3 py-1.5 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-800"
+              >
+                Archive
+              </button>
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
-          {status !== JobStatus.ARCHIVED && (
-            <Link
-              href={`/portal/jobs/${id}/edit`}
-              className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-            >
-              Edit
-            </Link>
-          )}
-
-          <button
-            onClick={() => runAction('duplicate')}
-            className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-          >
-            Duplicate
-          </button>
-
-          {status === JobStatus.DRAFT && (
-            <button
-              onClick={() => runAction('publish')}
-              className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-            >
-              Publish
-            </button>
-          )}
-
-          {status === JobStatus.PUBLISHED && (
-            <button
-              onClick={() => runAction('pause')}
-              className="px-3 py-1.5 text-sm bg-amber-500 text-white rounded-lg hover:bg-amber-600"
-            >
-              Pause
-            </button>
-          )}
-
-          {status === JobStatus.PAUSED && (
-            <button
-              onClick={() => runAction('reopen')}
-              className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-            >
-              Reopen
-            </button>
-          )}
-
-          {(status === JobStatus.PUBLISHED || status === JobStatus.PAUSED) && (
-            <button
-              onClick={() => runAction('close')}
-              className="px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700"
-            >
-              Close
-            </button>
-          )}
-
-          {/* CLOSED → Archive */}
-          {status === JobStatus.CLOSED && (
-            <button
-              onClick={() => runAction('archive')}
-              className="px-3 py-1.5 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-800"
-            >
-              Archive
-            </button>
-          )}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <Section title="Role Details">
-            <div className="space-y-3">
-              <InfoRow label="Department" value={job.department} />
-              <InfoRow label="Level" value={LEVEL_LABELS[job.level as ExperienceLevel] ?? job.level} />
-              <InfoRow label="Employment type" value={TYPE_LABELS[job.employmentType as EmploymentType] ?? job.employmentType} />
-              <InfoRow
-                label="Location"
-                value={
-                  <>
-                    {job.location}
-                    {job.isRemote && (
-                      <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
-                        Remote
-                      </span>
-                    )}
-                  </>
-                }
-              />
-              {salary && <InfoRow label="Salary" value={salary} />}
-              {job.headcount && <InfoRow label="Headcount" value={job.headcount} />}
-              {job.applicationDeadline && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <Section title="Role Details">
+              <div className="space-y-3">
+                <InfoRow label="Department" value={job.department} />
                 <InfoRow
-                  label="Deadline"
-                  value={new Date(job.applicationDeadline).toLocaleDateString()}
+                  label="Level"
+                  value={LEVEL_LABELS[job.level as ExperienceLevel] ?? job.level}
                 />
-              )}
-            </div>
-          </Section>
-
-          <Section title="Job Description">
-            <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
-              {job.description}
-            </p>
-          </Section>
-
-          {(() => {
-            const isReadOnly = status === JobStatus.CLOSED || status === JobStatus.ARCHIVED;
-            return (
-              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-                  <div>
-                    <h2 className="text-base font-semibold text-gray-900">
-                      Screening Questions{questions.length > 0 ? ` (${questions.length})` : ''}
-                    </h2>
-                    <p className="text-xs text-gray-500 mt-0.5">Shown to candidates before they apply</p>
-                  </div>
-                  {!isReadOnly && (
-                    <button
-                      onClick={() => { setShowAddQuestion((v) => !v); setAddForm(DEFAULT_QUESTION); }}
-                      className={clsx(
-                        'px-3 py-1.5 text-sm rounded-lg font-medium transition-colors',
-                        showAddQuestion
-                          ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                <InfoRow
+                  label="Employment type"
+                  value={TYPE_LABELS[job.employmentType as EmploymentType] ?? job.employmentType}
+                />
+                <InfoRow
+                  label="Location"
+                  value={
+                    <>
+                      {job.location}
+                      {job.isRemote && (
+                        <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
+                          Remote
+                        </span>
                       )}
-                    >
-                      {showAddQuestion ? 'Cancel' : '+ Add Question'}
-                    </button>
-                  )}
-                </div>
+                    </>
+                  }
+                />
+                {salary && <InfoRow label="Salary" value={salary} />}
+                {job.headcount && <InfoRow label="Headcount" value={job.headcount} />}
+                {job.applicationDeadline && (
+                  <InfoRow
+                    label="Deadline"
+                    value={new Date(job.applicationDeadline).toLocaleDateString()}
+                  />
+                )}
+              </div>
+            </Section>
 
-                {questions.length === 0 && !showAddQuestion ? (
-                  <p className="px-5 py-8 text-center text-sm text-gray-400">No screening questions yet.</p>
-                ) : questions.length > 0 && (
-                  <ul className="divide-y divide-gray-50">
-                    {questions.map((q: any) => {
-                      const isEditing = editingQuestionId === q.id;
-                      return (
-                        <li key={q.id} className={clsx('px-5 py-4', isEditing && 'bg-indigo-50/40')}>
-                          {isEditing ? (
-                            <div className="space-y-3">
-                              <textarea
-                                rows={2}
-                                className={inputCls}
-                                value={editingForm.question}
-                                onChange={(e) => setEditingForm((f) => ({ ...f, question: e.target.value }))}
-                                placeholder="Question text"
-                              />
-                              <div className="grid grid-cols-2 gap-2">
-                                <select
-                                  className={inputCls}
-                                  value={editingForm.type}
-                                  onChange={(e) => setEditingForm((f) => ({ ...f, type: e.target.value as QuestionType }))}
-                                >
-                                  {Object.entries(QUESTION_TYPE_LABELS).map(([v, l]) => (
-                                    <option key={v} value={v}>{l}</option>
-                                  ))}
-                                </select>
-                                <input
-                                  className={inputCls}
-                                  placeholder="Help text (optional)"
-                                  value={editingForm.helpText}
-                                  onChange={(e) => setEditingForm((f) => ({ ...f, helpText: e.target.value }))}
-                                />
-                              </div>
-                              {CHOICE_TYPES.includes(editingForm.type) && (
-                                <OptionsEditor
-                                  value={editingForm.options}
-                                  onChange={(v) => setEditingForm((f) => ({ ...f, options: v }))}
-                                />
-                              )}
-                              <div className="flex items-center gap-4 flex-wrap">
-                                <label className="flex items-center gap-1.5 text-xs text-gray-700 cursor-pointer">
-                                  <input
-                                    type="checkbox"
-                                    checked={editingForm.isRequired}
-                                    onChange={(e) => setEditingForm((f) => ({ ...f, isRequired: e.target.checked }))}
-                                    className="rounded"
-                                  />
-                                  Required
-                                </label>
-                                <label className="flex items-center gap-1.5 text-xs text-gray-700 cursor-pointer">
-                                  <input
-                                    type="checkbox"
-                                    checked={editingForm.isKnockout}
-                                    onChange={(e) => setEditingForm((f) => ({ ...f, isKnockout: e.target.checked }))}
-                                    className="rounded"
-                                  />
-                                  Knockout
-                                </label>
-                                {editingForm.isKnockout && (
+            <Section title="Job Description">
+              <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+                {job.description}
+              </p>
+            </Section>
+
+            {(() => {
+              const isReadOnly = status === JobStatus.CLOSED || status === JobStatus.ARCHIVED;
+              return (
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                  <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-base font-semibold text-gray-900">
+                        Screening Questions{questions.length > 0 ? ` (${questions.length})` : ''}
+                      </h2>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        Shown to candidates before they apply
+                      </p>
+                    </div>
+                    {!isReadOnly && (
+                      <button
+                        onClick={() => {
+                          setShowAddQuestion((v) => !v);
+                          setAddForm(DEFAULT_QUESTION);
+                        }}
+                        className={clsx(
+                          'px-3 py-1.5 text-sm rounded-lg font-medium transition-colors',
+                          showAddQuestion
+                            ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                        )}
+                      >
+                        {showAddQuestion ? 'Cancel' : '+ Add Question'}
+                      </button>
+                    )}
+                  </div>
+
+                  {questions.length === 0 && !showAddQuestion ? (
+                    <p className="px-5 py-8 text-center text-sm text-gray-400">
+                      No screening questions yet.
+                    </p>
+                  ) : (
+                    questions.length > 0 && (
+                      <ul className="divide-y divide-gray-50">
+                        {questions.map((q: any) => {
+                          const isEditing = editingQuestionId === q.id;
+                          return (
+                            <li
+                              key={q.id}
+                              className={clsx('px-5 py-4', isEditing && 'bg-indigo-50/40')}
+                            >
+                              {isEditing ? (
+                                <div className="space-y-3">
                                   <textarea
                                     rows={2}
                                     className={inputCls}
-                                    placeholder="Knockout answer(s) (comma-separated)"
-                                    value={editingForm.knockoutAnswers}
-                                    onChange={(e) => setEditingForm((f) => ({ ...f, knockoutAnswers: e.target.value }))}
+                                    value={editingForm.question}
+                                    onChange={(e) =>
+                                      setEditingForm((f) => ({ ...f, question: e.target.value }))
+                                    }
+                                    placeholder="Question text"
                                   />
-                                )}
-                                <div className="ml-auto flex gap-2">
-                                  <button
-                                    onClick={() => setEditingQuestionId(null)}
-                                    className="text-xs text-gray-400 hover:text-gray-600"
-                                  >
-                                    Cancel
-                                  </button>
-                                  <button
-                                    onClick={() => saveQuestion(q.id)}
-                                    className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
-                                  >
-                                    Save
-                                  </button>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <select
+                                      className={inputCls}
+                                      value={editingForm.type}
+                                      onChange={(e) =>
+                                        setEditingForm((f) => ({
+                                          ...f,
+                                          type: e.target.value as QuestionType,
+                                        }))
+                                      }
+                                    >
+                                      {Object.entries(QUESTION_TYPE_LABELS).map(([v, l]) => (
+                                        <option key={v} value={v}>
+                                          {l}
+                                        </option>
+                                      ))}
+                                    </select>
+                                    <input
+                                      className={inputCls}
+                                      placeholder="Help text (optional)"
+                                      value={editingForm.helpText}
+                                      onChange={(e) =>
+                                        setEditingForm((f) => ({ ...f, helpText: e.target.value }))
+                                      }
+                                    />
+                                  </div>
+                                  {CHOICE_TYPES.includes(editingForm.type) && (
+                                    <OptionsEditor
+                                      value={editingForm.options}
+                                      onChange={(v) =>
+                                        setEditingForm((f) => ({ ...f, options: v }))
+                                      }
+                                    />
+                                  )}
+                                  <div className="flex items-center gap-4 flex-wrap">
+                                    <label className="flex items-center gap-1.5 text-xs text-gray-700 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        checked={editingForm.isRequired}
+                                        onChange={(e) =>
+                                          setEditingForm((f) => ({
+                                            ...f,
+                                            isRequired: e.target.checked,
+                                          }))
+                                        }
+                                        className="rounded"
+                                      />
+                                      Required
+                                    </label>
+                                    <label className="flex items-center gap-1.5 text-xs text-gray-700 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        checked={editingForm.isKnockout}
+                                        onChange={(e) =>
+                                          setEditingForm((f) => ({
+                                            ...f,
+                                            isKnockout: e.target.checked,
+                                          }))
+                                        }
+                                        className="rounded"
+                                      />
+                                      Knockout
+                                    </label>
+                                    {editingForm.isKnockout && (
+                                      <textarea
+                                        rows={2}
+                                        className={inputCls}
+                                        placeholder="Knockout answer(s) (comma-separated)"
+                                        value={editingForm.knockoutAnswers}
+                                        onChange={(e) =>
+                                          setEditingForm((f) => ({
+                                            ...f,
+                                            knockoutAnswers: e.target.value,
+                                          }))
+                                        }
+                                      />
+                                    )}
+                                    <div className="ml-auto flex gap-2">
+                                      <button
+                                        onClick={() => setEditingQuestionId(null)}
+                                        className="text-xs text-gray-400 hover:text-gray-600"
+                                      >
+                                        Cancel
+                                      </button>
+                                      <button
+                                        onClick={() => saveQuestion(q.id)}
+                                        className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                                      >
+                                        Save
+                                      </button>
+                                    </div>
+                                  </div>
                                 </div>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm text-gray-800">{q.question}</p>
-                                <div className="flex flex-wrap gap-2 mt-1.5">
-                                  <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs">
-                                    {QUESTION_TYPE_LABELS[q.type as QuestionType]}
-                                  </span>
-                                  {q.isRequired && (
-                                    <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs">Required</span>
+                              ) : (
+                                <div className="flex items-start justify-between gap-4">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm text-gray-800">{q.question}</p>
+                                    <div className="flex flex-wrap gap-2 mt-1.5">
+                                      <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs">
+                                        {QUESTION_TYPE_LABELS[q.type as QuestionType]}
+                                      </span>
+                                      {q.isRequired && (
+                                        <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs">
+                                          Required
+                                        </span>
+                                      )}
+                                      {q.isKnockout && (
+                                        <span className="px-2 py-0.5 bg-red-50 text-red-600 rounded-full text-xs">
+                                          Knockout
+                                        </span>
+                                      )}
+                                      {q.isKnockout && q.knockoutAnswers?.length > 0 && (
+                                        <span className="text-xs text-gray-400">
+                                          {q.knockoutAnswers.join(', ')}
+                                        </span>
+                                      )}
+                                      {q.options?.length > 0 && (
+                                        <span className="text-xs text-gray-400">
+                                          {q.options.join(', ')}
+                                        </span>
+                                      )}
+                                      {q.helpText && (
+                                        <span className="text-xs text-gray-400 italic">
+                                          {q.helpText}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  {!isReadOnly && (
+                                    <div className="flex gap-3 flex-shrink-0">
+                                      <button
+                                        onClick={() => startEditQuestion(q)}
+                                        className="text-xs text-indigo-500 hover:text-indigo-700"
+                                      >
+                                        Edit
+                                      </button>
+                                      <button
+                                        onClick={() => deleteQuestion(q.id, q.question)}
+                                        className="text-xs text-red-400 hover:text-red-600"
+                                      >
+                                        Remove
+                                      </button>
+                                    </div>
                                   )}
-                                  {q.isKnockout && (
-                                    <span className="px-2 py-0.5 bg-red-50 text-red-600 rounded-full text-xs">Knockout</span>
-                                  )}
-                                  {q.options?.length > 0 && (
-                                    <span className="text-xs text-gray-400">{q.options.join(', ')}</span>
-                                  )}
-                                  {q.helpText && (
-                                    <span className="text-xs text-gray-400 italic">{q.helpText}</span>
-                                  )}
-                                </div>
-                              </div>
-                              {!isReadOnly && (
-                                <div className="flex gap-3 flex-shrink-0">
-                                  <button
-                                    onClick={() => startEditQuestion(q)}
-                                    className="text-xs text-indigo-500 hover:text-indigo-700"
-                                  >
-                                    Edit
-                                  </button>
-                                  <button
-                                    onClick={() => deleteQuestion(q.id, q.question)}
-                                    className="text-xs text-red-400 hover:text-red-600"
-                                  >
-                                    Remove
-                                  </button>
                                 </div>
                               )}
-                            </div>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )
+                  )}
 
-                {showAddQuestion && (
-                  <form onSubmit={addQuestion} className="px-5 py-4 border-t border-gray-100 bg-gray-50 space-y-3">
-                    <h4 className="text-xs font-semibold text-gray-700">New Question</h4>
-                    <textarea
-                      required
-                      rows={2}
-                      className={inputCls}
-                      placeholder="e.g. Do you have valid work authorization in Sri Lanka?"
-                      value={addForm.question}
-                      onChange={(e) => setAddForm((f) => ({ ...f, question: e.target.value }))}
-                    />
-                    <div className="grid grid-cols-2 gap-2">
-                      <select
+                  {showAddQuestion && (
+                    <form
+                      onSubmit={addQuestion}
+                      className="px-5 py-4 border-t border-gray-100 bg-gray-50 space-y-3"
+                    >
+                      <h4 className="text-xs font-semibold text-gray-700">New Question</h4>
+                      <textarea
+                        required
+                        rows={2}
                         className={inputCls}
-                        value={addForm.type}
-                        onChange={(e) => setAddForm((f) => ({ ...f, type: e.target.value as QuestionType }))}
-                      >
-                        {Object.entries(QUESTION_TYPE_LABELS).map(([v, l]) => (
-                          <option key={v} value={v}>{l}</option>
-                        ))}
-                      </select>
-                      <input
-                        className={inputCls}
-                        placeholder="Help text (optional)"
-                        value={addForm.helpText}
-                        onChange={(e) => setAddForm((f) => ({ ...f, helpText: e.target.value }))}
+                        placeholder="e.g. Do you have valid work authorization in Sri Lanka?"
+                        value={addForm.question}
+                        onChange={(e) => setAddForm((f) => ({ ...f, question: e.target.value }))}
                       />
-                    </div>
-                    {CHOICE_TYPES.includes(addForm.type) && (
-                      <OptionsEditor
-                        value={addForm.options}
-                        onChange={(v) => setAddForm((f) => ({ ...f, options: v }))}
-                      />
-                    )}
-                    <div className="flex items-center gap-4 flex-wrap">
-                      <label className="flex items-center gap-1.5 text-xs text-gray-700 cursor-pointer">
+                      <div className="grid grid-cols-2 gap-2">
+                        <select
+                          className={inputCls}
+                          value={addForm.type}
+                          onChange={(e) =>
+                            setAddForm((f) => ({ ...f, type: e.target.value as QuestionType }))
+                          }
+                        >
+                          {Object.entries(QUESTION_TYPE_LABELS).map(([v, l]) => (
+                            <option key={v} value={v}>
+                              {l}
+                            </option>
+                          ))}
+                        </select>
                         <input
-                          type="checkbox"
-                          checked={addForm.isRequired}
-                          onChange={(e) => setAddForm((f) => ({ ...f, isRequired: e.target.checked }))}
-                          className="rounded"
+                          className={inputCls}
+                          placeholder="Help text (optional)"
+                          value={addForm.helpText}
+                          onChange={(e) => setAddForm((f) => ({ ...f, helpText: e.target.value }))}
                         />
-                        Required
-                      </label>
-                      <label className="flex items-center gap-1.5 text-xs text-gray-700 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={addForm.isKnockout}
-                          onChange={(e) => setAddForm((f) => ({ ...f, isKnockout: e.target.checked }))}
-                          className="rounded"
-                        />
-                        Knockout
-                      </label>
-                      {addForm.isKnockout && (
-                        <input
-                          className={clsx(inputCls, 'w-56')}
-                          placeholder="Knockout answer(s) (comma-separated)"
-                          value={addForm.knockoutAnswers}
-                          onChange={(e) => setAddForm((f) => ({ ...f, knockoutAnswers: e.target.value }))}
+                      </div>
+                      {CHOICE_TYPES.includes(addForm.type) && (
+                        <OptionsEditor
+                          value={addForm.options}
+                          onChange={(v) => setAddForm((f) => ({ ...f, options: v }))}
                         />
                       )}
-                      <button
-                        type="submit"
-                        className="ml-auto px-4 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium"
-                      >
-                        Add
-                      </button>
-                    </div>
-                  </form>
-                )}
-              </div>
-            );
-          })()}
-        </div>
-
-        <div className="space-y-6">
-          <Section title="Interview Stages">
-            {job.interviewTypes?.length > 0 ? (
-              <ul className="space-y-2">
-                {job.interviewTypes.map((t: InterviewType) => (
-                  <li key={t} className="flex items-center gap-2 text-sm text-gray-700">
-                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 flex-shrink-0" />
-                    {INTERVIEW_LABELS[t] ?? t}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-gray-400">None configured</p>
-            )}
-          </Section>
-
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-semibold text-gray-900">Scoring Configuration</h2>
-              <Link
-                href={`/portal/jobs/${id}/scoring`}
-                className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
-              >
-                {job.hasScoringConfig ? 'Edit' : 'Configure'}
-              </Link>
-            </div>
-            {job.hasScoringConfig ? (
-              <div className="space-y-2">
-                <InfoRow
-                  label="Shortlist threshold"
-                  value={`${job.scoringConfig.shortlistThreshold}%`}
-                />
-                <InfoRow
-                  label="Pass threshold"
-                  value={`${job.scoringConfig.passThreshold}%`}
-                />
-                <InfoRow
-                  label="Dimensions"
-                  value={job.scoringConfig.dimensionCount}
-                />
-                <InfoRow
-                  label="Knockout rules"
-                  value={job.scoringConfig.knockoutRuleCount}
-                />
-                <InfoRow
-                  label="Weight balanced"
-                  value={job.scoringConfig.isWeightBalanced ? 'Yes' : 'No'}
-                />
-              </div>
-            ) : (
-              <p className="text-sm text-gray-400">No scoring config</p>
-            )}
+                      <div className="flex items-center gap-4 flex-wrap">
+                        <label className="flex items-center gap-1.5 text-xs text-gray-700 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={addForm.isRequired}
+                            onChange={(e) =>
+                              setAddForm((f) => ({ ...f, isRequired: e.target.checked }))
+                            }
+                            className="rounded"
+                          />
+                          Required
+                        </label>
+                        <label className="flex items-center gap-1.5 text-xs text-gray-700 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={addForm.isKnockout}
+                            onChange={(e) =>
+                              setAddForm((f) => ({ ...f, isKnockout: e.target.checked }))
+                            }
+                            className="rounded"
+                          />
+                          Knockout
+                        </label>
+                        {addForm.isKnockout && (
+                          <input
+                            className={clsx(inputCls, 'w-56')}
+                            placeholder="Knockout answer(s) (comma-separated)"
+                            value={addForm.knockoutAnswers}
+                            onChange={(e) =>
+                              setAddForm((f) => ({ ...f, knockoutAnswers: e.target.value }))
+                            }
+                          />
+                        )}
+                        <button
+                          type="submit"
+                          className="ml-auto px-4 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium"
+                        >
+                          Add
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
-          <Section title="Metadata">
-            <div className="space-y-2">
-              <InfoRow label="Created by" value={job.createdBy?.fullName ?? '—'} />
-              <InfoRow
-                label="Created"
-                value={new Date(job.createdAt).toLocaleDateString()}
-              />
-              <InfoRow
-                label="Updated"
-                value={new Date(job.updatedAt).toLocaleDateString()}
-              />
-              {job.slug && <InfoRow label="Slug" value={job.slug} />}
+          <div className="space-y-6">
+            <Section title="Interview Stages">
+              {job.interviewTypes?.length > 0 ? (
+                <ul className="space-y-2">
+                  {job.interviewTypes.map((t: InterviewType) => (
+                    <li key={t} className="flex items-center gap-2 text-sm text-gray-700">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 flex-shrink-0" />
+                      {INTERVIEW_LABELS[t] ?? t}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-gray-400">None configured</p>
+              )}
+            </Section>
+
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-semibold text-gray-900">Scoring Configuration</h2>
+                <Link
+                  href={`/portal/jobs/${id}/scoring`}
+                  className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                >
+                   {job.hasScoringConfig ? 'Update' : 'Configure'}
+                </Link>
+              </div>
+              {job.hasScoringConfig ? (
+                <div className="space-y-2">
+                  <InfoRow
+                    label="Shortlist threshold"
+                    value={`${job.scoringConfig.shortlistThreshold}%`}
+                  />
+                  <InfoRow label="Pass threshold" value={`${job.scoringConfig.passThreshold}%`} />
+                  <InfoRow label="Dimensions" value={job.scoringConfig.dimensionCount} />
+                  <InfoRow label="Knockout rules" value={job.scoringConfig.knockoutRuleCount} />
+                  <InfoRow
+                    label="Weight balanced"
+                    value={job.scoringConfig.isWeightBalanced ? 'Yes' : 'No'}
+                  />
+                </div>
+              ) : (
+                <p className="text-sm text-gray-400">No scoring config</p>
+              )}
             </div>
-          </Section>
+
+            <Section title="Metadata">
+              <div className="space-y-2">
+                <InfoRow label="Created by" value={job.createdBy?.fullName ?? '—'} />
+                <InfoRow label="Created" value={new Date(job.createdAt).toLocaleDateString()} />
+                <InfoRow label="Updated" value={new Date(job.updatedAt).toLocaleDateString()} />
+                {job.slug && <InfoRow label="Slug" value={job.slug} />}
+              </div>
+            </Section>
+          </div>
         </div>
       </div>
-    </div>
     </>
   );
 }

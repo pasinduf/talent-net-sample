@@ -108,7 +108,7 @@ interface ScreeningQuestionDraft {
   type: QuestionType;
   isRequired: boolean;
   isKnockout: boolean;
-  options: string;
+  options: string[];
   helpText: string;
 }
 
@@ -206,10 +206,12 @@ export default function NewJobPage() {
 
   function validateStep1(): string {
     if (!role.title.trim()) return 'Job title is required.';
+    if (!role.description.trim()) return 'Job description is required.';
     if (!role.department) return 'Department is required.';
     if (!role.level) return 'Experience level is required.';
     if (!role.employmentType) return 'Employment type is required.';
     if (!role.location.trim()) return 'Location is required.';
+    if (role.interviewTypes.length === 0) return 'Select at least one interview stage.';
     return '';
   }
 
@@ -291,7 +293,7 @@ export default function NewJobPage() {
           isRequired: q.isRequired,
           isKnockout: q.isKnockout,
           options: [QuestionType.SINGLE_CHOICE, QuestionType.MULTI_CHOICE].includes(q.type)
-            ? q.options.split(',').map((o) => o.trim()).filter(Boolean)
+            ? q.options
             : undefined,
           helpText: q.helpText || undefined,
           order: i,
@@ -527,23 +529,47 @@ function StepRoleDetails({ form, onChange }: { form: RoleForm; onChange: (f: Rol
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="Department" required>
-            <select value={form.department} onChange={(e) => set('department', e.target.value)} className={inputCls}>
+            <select
+              value={form.department}
+              onChange={(e) => set('department', e.target.value)}
+              className={inputCls}
+            >
               <option value="">Select department</option>
-              {DEPARTMENTS.map((d) => <option key={d} value={d}>{d}</option>)}
+              {DEPARTMENTS.map((d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
+              ))}
             </select>
           </Field>
 
           <Field label="Experience Level" required>
-            <select value={form.level} onChange={(e) => set('level', e.target.value as ExperienceLevel)} className={inputCls}>
+            <select
+              value={form.level}
+              onChange={(e) => set('level', e.target.value as ExperienceLevel)}
+              className={inputCls}
+            >
               <option value="">Select level</option>
-              {Object.entries(LEVEL_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+              {Object.entries(LEVEL_LABELS).map(([v, l]) => (
+                <option key={v} value={v}>
+                  {l}
+                </option>
+              ))}
             </select>
           </Field>
 
           <Field label="Employment Type" required>
-            <select value={form.employmentType} onChange={(e) => set('employmentType', e.target.value as EmploymentType)} className={inputCls}>
+            <select
+              value={form.employmentType}
+              onChange={(e) => set('employmentType', e.target.value as EmploymentType)}
+              className={inputCls}
+            >
               <option value="">Select type</option>
-              {Object.entries(TYPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+              {Object.entries(TYPE_LABELS).map(([v, l]) => (
+                <option key={v} value={v}>
+                  {l}
+                </option>
+              ))}
             </select>
           </Field>
 
@@ -595,26 +621,54 @@ function StepRoleDetails({ form, onChange }: { form: RoleForm; onChange: (f: Rol
       </Section>
 
       {/* Salary */}
-      <Section title="Salary Range" subtitle="Optional — leave blank to hide from the careers portal">
+      <Section
+        title="Salary Range"
+        subtitle="Optional — leave blank to hide from the careers portal"
+      >
         <div className="grid grid-cols-3 gap-4">
           <Field label="Currency">
-            <select value={form.salaryCurrency} onChange={(e) => set('salaryCurrency', e.target.value)} className={inputCls}>
-              {['LKR', 'USD', 'SGD', 'EUR', 'GBP'].map((c) => <option key={c} value={c}>{c}</option>)}
+            <select
+              value={form.salaryCurrency}
+              onChange={(e) => set('salaryCurrency', e.target.value)}
+              className={inputCls}
+            >
+              {['LKR', 'USD', 'SGD', 'EUR', 'GBP'].map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
             </select>
           </Field>
           <Field label="Minimum">
-            <input type="number" min="0" value={form.salaryMin} onChange={(e) => set('salaryMin', e.target.value)} placeholder="e.g. 80000" className={inputCls} />
+            <input
+              type="number"
+              min="0"
+              value={form.salaryMin}
+              onChange={(e) => set('salaryMin', e.target.value)}
+              placeholder="e.g. 80000"
+              className={inputCls}
+            />
           </Field>
           <Field label="Maximum">
-            <input type="number" min="0" value={form.salaryMax} onChange={(e) => set('salaryMax', e.target.value)} placeholder="e.g. 120000" className={inputCls} />
+            <input
+              type="number"
+              min="0"
+              value={form.salaryMax}
+              onChange={(e) => set('salaryMax', e.target.value)}
+              placeholder="e.g. 120000"
+              className={inputCls}
+            />
           </Field>
         </div>
       </Section>
 
       {/* Interview stages */}
-      <Section title="Interview Stages" subtitle="Select the stages that will be part of this hiring process">
+      <Section
+        title={<>Interview Stages <span className="text-red-500">*</span></>}
+        subtitle="Select the stages that will be part of this hiring process"
+      >
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {(Object.values(InterviewType)).map((v) => {
+          {Object.values(InterviewType).map((v) => {
             const checked = form.interviewTypes.includes(v);
             return (
               <button
@@ -625,11 +679,18 @@ function StepRoleDetails({ form, onChange }: { form: RoleForm; onChange: (f: Rol
                   'flex items-center gap-2 px-3 py-2.5 rounded-lg border text-sm cursor-pointer transition-colors select-none text-left',
                   checked
                     ? 'border-indigo-500 bg-indigo-50 text-indigo-700 font-medium'
-                    : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50',
+                    : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
                 )}
               >
-                <span className={clsx('w-4 h-4 rounded border flex items-center justify-center flex-shrink-0', checked ? 'border-indigo-500 bg-indigo-500' : 'border-gray-300 bg-white')}>
-                  {checked && <span className="text-white text-[10px] font-bold leading-none">✓</span>}
+                <span
+                  className={clsx(
+                    'w-4 h-4 rounded border flex items-center justify-center flex-shrink-0',
+                    checked ? 'border-indigo-500 bg-indigo-500' : 'border-gray-300 bg-white'
+                  )}
+                >
+                  {checked && (
+                    <span className="text-white text-[10px] font-bold leading-none">✓</span>
+                  )}
                 </span>
                 {INTERVIEW_TYPE_LABELS[v]}
               </button>
@@ -639,7 +700,14 @@ function StepRoleDetails({ form, onChange }: { form: RoleForm; onChange: (f: Rol
       </Section>
 
       {/* Description */}
-      <Section title="Job Description" subtitle="HTML is supported: h2, ul, li, p, strong, em">
+      <Section
+        title={
+          <>
+            Job Description <span className="text-red-500">*</span>
+          </>
+        }
+        subtitle="HTML is supported: h2, ul, li, p, strong, em"
+      >
         <textarea
           value={form.description}
           onChange={(e) => set('description', e.target.value)}
@@ -658,7 +726,7 @@ const CHOICE_TYPES = new Set<QuestionType>([QuestionType.SINGLE_CHOICE, Question
 
 const BLANK_QUESTION = (): ScreeningQuestionDraft => ({
   _id: uid(), question: '', type: QuestionType.TEXT,
-  isRequired: true, isKnockout: false, options: '', helpText: '',
+  isRequired: true, isKnockout: false, options: [], helpText: '',
 });
 
 function StepApplicationForm({
@@ -723,7 +791,7 @@ function StepApplicationForm({
                   </p>
                   <p className="text-xs text-gray-400 mt-0.5">
                     {QUESTION_TYPE_LABELS[q.type]}
-                    {CHOICE_TYPES.has(q.type) && q.options && ` · Options: ${q.options}`}
+                    {CHOICE_TYPES.has(q.type) && q.options.length > 0 && ` · Options: ${q.options.join(', ')}`}
                     {q.helpText && ` · ${q.helpText}`}
                   </p>
                 </div>
@@ -752,13 +820,10 @@ function StepApplicationForm({
             </div>
             {CHOICE_TYPES.has(draft.type) && (
               <div className="col-span-2">
-                <label className="block text-xs text-gray-500 mb-1">Options (comma-separated)</label>
-                <input
-                  type="text"
+                <label className="block text-xs text-gray-500 mb-1">Options</label>
+                <OptionsEditor
                   value={draft.options}
-                  onChange={(e) => updateDraft('options', e.target.value)}
-                  placeholder="Option A, Option B, Option C"
-                  className={inputCls}
+                  onChange={(v) => updateDraft('options', v)}
                 />
               </div>
             )}
@@ -1266,7 +1331,7 @@ function StepReview({ role, questions, scoring, dimensions, knockouts }: {
 
 // ─── Small helpers ────────────────────────────────────────────────────────────
 
-function Section({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
+function Section({ title, subtitle, children }: { title: React.ReactNode; subtitle?: string; children: React.ReactNode }) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
       <div>
@@ -1356,6 +1421,46 @@ function KnockoutActionBadge({ action }: { action: KnockoutAction }) {
     )}>
       {action.replace(/_/g, ' ')}
     </span>
+  );
+}
+
+function OptionsEditor({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
+  const [input, setInput] = useState('');
+
+  function add() {
+    const trimmed = input.trim();
+    if (!trimmed || value.includes(trimmed)) return;
+    onChange([...value, trimmed]);
+    setInput('');
+  }
+
+  return (
+    <div className="space-y-1.5">
+      {value.map((opt, i) => (
+        <div key={i} className="flex items-center gap-2">
+          <span className="flex-1 px-2.5 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-800 truncate">{opt}</span>
+          <button
+            type="button"
+            onClick={() => onChange(value.filter((_, j) => j !== i))}
+            className="text-gray-400 hover:text-red-500 text-lg leading-none px-1 flex-shrink-0"
+          >×</button>
+        </div>
+      ))}
+      <div className="flex gap-2">
+        <input
+          className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          placeholder="Type an option and press + or Enter"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); add(); } }}
+        />
+        <button
+          type="button"
+          onClick={add}
+          className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium flex-shrink-0"
+        >+</button>
+      </div>
+    </div>
   );
 }
 
