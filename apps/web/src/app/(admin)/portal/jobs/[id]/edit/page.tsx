@@ -11,40 +11,16 @@ import {
   ExperienceLevel,
   InterviewType,
   JobStatus,
+  DEPARTMENTS,
+  EXPERIENCE_LEVELS,
+  EMPLOYMENT_TYPES,
+  INTERVIEW_TYPES,
 } from '@talent-net/types';
 import { useConfirmModal } from '@/components/ui/ConfirmModal';
 import { API, authHeaders, fetcher } from '@/lib/api';
 import { ArrowLeft } from 'lucide-react';
 
 
-const DEPARTMENTS = [
-  'Engineering', 'Design', 'Data & Analytics', 'Infrastructure', 'Marketing',
-  'Human Resources', 'Finance', 'Sales', 'Operations', 'Legal', 'Product',
-];
-
-const LEVEL_LABELS: Record<ExperienceLevel, string> = {
-  [ExperienceLevel.ENTRY]: 'Entry Level',
-  [ExperienceLevel.JUNIOR]: 'Junior',
-  [ExperienceLevel.MID]: 'Mid Level',
-  [ExperienceLevel.SENIOR]: 'Senior',
-  [ExperienceLevel.LEAD]: 'Lead',
-  [ExperienceLevel.EXECUTIVE]: 'Executive',
-};
-
-const TYPE_LABELS: Record<EmploymentType, string> = {
-  [EmploymentType.FULL_TIME]: 'Full-time',
-  [EmploymentType.PART_TIME]: 'Part-time',
-  [EmploymentType.CONTRACT]: 'Contract',
-  [EmploymentType.INTERNSHIP]: 'Internship',
-  [EmploymentType.FREELANCE]: 'Freelance',
-};
-
-const INTERVIEW_TYPE_LABELS: Record<InterviewType, string> = {
-  [InterviewType.TAKE_HOME]: 'Take-home Assignment',
-  [InterviewType.AI]: 'AI Interview',
-  [InterviewType.MANUAL]: 'Manual Interview',
-  [InterviewType.HYBRID]: 'Hybrid (AI + Manual)',
-};
 
 interface JobForm {
   title: string;
@@ -241,240 +217,254 @@ export default function EditJobPage({ params }: { params: Promise<{ id: string }
 
   return (
     <>
-    {confirmModal}
-    <div className="p-6 max-w-3xl space-y-6">
-      <div className="flex items-center gap-3">
-        <Link
-          href={`/portal/jobs/${id}`}
-          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
-        >
-          <ArrowLeft size={13} /> {job.title}
-        </Link>
-        <span className="text-gray-300">/</span>
-        <h1 className="text-xl font-bold text-gray-900">Edit Job</h1>
-      </div>
-
-      {isReadOnly && (
-        <div className="px-4 py-3 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-700">
-          This job is <strong>{job.status}</strong> and cannot be edited.
+      {confirmModal}
+      <div className="p-6 max-w-3xl space-y-6">
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/portal/jobs/${id}`}
+            className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+          >
+            <ArrowLeft size={13} /> {job.title}
+          </Link>
+          <span className="text-gray-300">/</span>
+          <h1 className="text-xl font-bold text-gray-900">Edit Job</h1>
         </div>
-      )}
 
-      {error && (
-        <div className="px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
-          {error}
-        </div>
-      )}
+        {isReadOnly && (
+          <div className="px-4 py-3 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-700">
+            This job is <strong>{job.status}</strong> and cannot be edited.
+          </div>
+        )}
 
-      <Section title="Basic Information">
-        <Field label="Job Title" required>
-          <input
-            type="text"
-            value={form.title}
-            onChange={(e) => set('title', e.target.value)}
-            disabled={isReadOnly}
-            placeholder="e.g. Senior Frontend Engineer"
-            className={inputCls}
-          />
-        </Field>
+        {error && (
+          <div className="px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
+            {error}
+          </div>
+        )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="Department" required>
-            <select
-              value={form.department}
-              onChange={(e) => set('department', e.target.value)}
-              disabled={isReadOnly}
-              className={inputCls}
-            >
-              <option value="">Select department</option>
-              {DEPARTMENTS.map((d) => (
-                <option key={d} value={d}>{d}</option>
-              ))}
-            </select>
-          </Field>
-
-          <Field label="Experience Level" required>
-            <select
-              value={form.level}
-              onChange={(e) => set('level', e.target.value as ExperienceLevel)}
-              disabled={isReadOnly}
-              className={inputCls}
-            >
-              <option value="">Select level</option>
-              {Object.entries(LEVEL_LABELS).map(([v, l]) => (
-                <option key={v} value={v}>{l}</option>
-              ))}
-            </select>
-          </Field>
-
-          <Field label="Employment Type" required>
-            <select
-              value={form.employmentType}
-              onChange={(e) => set('employmentType', e.target.value as EmploymentType)}
-              disabled={isReadOnly}
-              className={inputCls}
-            >
-              <option value="">Select type</option>
-              {Object.entries(TYPE_LABELS).map(([v, l]) => (
-                <option key={v} value={v}>{l}</option>
-              ))}
-            </select>
-          </Field>
-
-          <Field label="Headcount" hint="Number of openings">
-            <input
-              type="number"
-              min="1"
-              value={form.headcount}
-              onChange={(e) => set('headcount', e.target.value)}
-              disabled={isReadOnly}
-              placeholder="1"
-              className={inputCls}
-            />
-          </Field>
-
-          <Field label="Application Deadline">
-            <input
-              type="date"
-              value={form.applicationDeadline}
-              onChange={(e) => set('applicationDeadline', e.target.value)}
-              disabled={isReadOnly}
-              min={today}
-              className={inputCls}
-            />
-          </Field>
-        </div>
-      </Section>
-
-      <Section title="Location">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="Office Location" required>
+        <Section title="Basic Information">
+          <Field label="Job Title" required>
             <input
               type="text"
-              value={form.location}
-              onChange={(e) => set('location', e.target.value)}
+              value={form.title}
+              onChange={(e) => set('title', e.target.value)}
               disabled={isReadOnly}
-              placeholder="e.g. Colombo"
+              placeholder="e.g. Senior Frontend Engineer"
               className={inputCls}
             />
           </Field>
-        </div>
-        <label className="flex items-center gap-3 cursor-pointer mt-1">
-          <input
-            type="checkbox"
-            checked={form.isRemote}
-            onChange={(e) => set('isRemote', e.target.checked)}
-            disabled={isReadOnly}
-            className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-          />
-          <span className="text-sm text-gray-700">Remote-friendly position</span>
-        </label>
-      </Section>
 
-      <Section title="Salary Range" subtitle="Optional — leave blank to hide from the careers portal">
-        <div className="grid grid-cols-3 gap-4">
-          <Field label="Currency">
-            <select
-              value={form.salaryCurrency}
-              onChange={(e) => set('salaryCurrency', e.target.value)}
-              disabled={isReadOnly}
-              className={inputCls}
-            >
-              {['LKR', 'USD', 'SGD', 'EUR', 'GBP', 'THB'].map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Minimum">
-            <input
-              type="number"
-              min="0"
-              value={form.salaryMin}
-              onChange={(e) => set('salaryMin', e.target.value)}
-              disabled={isReadOnly}
-              placeholder="e.g. 80000"
-              className={inputCls}
-            />
-          </Field>
-          <Field label="Maximum">
-            <input
-              type="number"
-              min="0"
-              value={form.salaryMax}
-              onChange={(e) => set('salaryMax', e.target.value)}
-              disabled={isReadOnly}
-              placeholder="e.g. 120000"
-              className={inputCls}
-            />
-          </Field>
-        </div>
-      </Section>
-
-      <Section title="Interview Stages" subtitle="Select the stages that will be part of this hiring process">
-        <div className="grid grid-cols-2 sm:grid-cols-2 gap-2">
-          {Object.values(InterviewType).map((v) => {
-            const checked = form.interviewTypes.includes(v);
-            return (
-              <button
-                key={v}
-                type="button"
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Department" required>
+              <select
+                value={form.department}
+                onChange={(e) => set('department', e.target.value)}
                 disabled={isReadOnly}
-                onClick={() => toggleInterviewType(v)}
-                className={clsx(
-                  'flex items-center gap-2 px-3 py-2.5 rounded-lg border text-sm cursor-pointer transition-colors select-none text-left',
-                  checked
-                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700 font-medium'
-                    : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50',
-                  isReadOnly && 'opacity-50 cursor-not-allowed'
-                )}
+                className={inputCls}
               >
-                <span
+                <option value="">Select department</option>
+                {DEPARTMENTS.map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <Field label="Experience Level" required>
+              <select
+                value={form.level}
+                onChange={(e) => set('level', e.target.value as ExperienceLevel)}
+                disabled={isReadOnly}
+                className={inputCls}
+              >
+                <option value="">Select level</option>
+                {Object.entries(EXPERIENCE_LEVELS).map(([v, l]) => (
+                  <option key={v} value={v}>
+                    {l}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <Field label="Employment Type" required>
+              <select
+                value={form.employmentType}
+                onChange={(e) => set('employmentType', e.target.value as EmploymentType)}
+                disabled={isReadOnly}
+                className={inputCls}
+              >
+                <option value="">Select type</option>
+                {Object.entries(EMPLOYMENT_TYPES).map(([v, l]) => (
+                  <option key={v} value={v}>
+                    {l}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <Field label="Headcount" hint="Number of openings">
+              <input
+                type="number"
+                min="1"
+                value={form.headcount}
+                onChange={(e) => set('headcount', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="1"
+                className={inputCls}
+              />
+            </Field>
+
+            <Field label="Application Deadline">
+              <input
+                type="date"
+                value={form.applicationDeadline}
+                onChange={(e) => set('applicationDeadline', e.target.value)}
+                disabled={isReadOnly}
+                min={today}
+                className={inputCls}
+              />
+            </Field>
+          </div>
+        </Section>
+
+        <Section title="Location">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Office Location" required>
+              <input
+                type="text"
+                value={form.location}
+                onChange={(e) => set('location', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="e.g. Colombo"
+                className={inputCls}
+              />
+            </Field>
+          </div>
+          <label className="flex items-center gap-3 cursor-pointer mt-1">
+            <input
+              type="checkbox"
+              checked={form.isRemote}
+              onChange={(e) => set('isRemote', e.target.checked)}
+              disabled={isReadOnly}
+              className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            />
+            <span className="text-sm text-gray-700">Remote-friendly position</span>
+          </label>
+        </Section>
+
+        <Section
+          title="Salary Range"
+          subtitle="Optional — leave blank to hide from the careers portal"
+        >
+          <div className="grid grid-cols-3 gap-4">
+            <Field label="Currency">
+              <select
+                value={form.salaryCurrency}
+                onChange={(e) => set('salaryCurrency', e.target.value)}
+                disabled={isReadOnly}
+                className={inputCls}
+              >
+                {['LKR', 'USD', 'SGD', 'EUR', 'GBP', 'THB'].map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Minimum">
+              <input
+                type="number"
+                min="0"
+                value={form.salaryMin}
+                onChange={(e) => set('salaryMin', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="e.g. 80000"
+                className={inputCls}
+              />
+            </Field>
+            <Field label="Maximum">
+              <input
+                type="number"
+                min="0"
+                value={form.salaryMax}
+                onChange={(e) => set('salaryMax', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="e.g. 120000"
+                className={inputCls}
+              />
+            </Field>
+          </div>
+        </Section>
+
+        <Section
+          title="Interview Stages"
+          subtitle="Select the stages that will be part of this hiring process"
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-2 gap-2">
+            {Object.values(InterviewType).map((v) => {
+              const checked = form.interviewTypes.includes(v);
+              return (
+                <button
+                  key={v}
+                  type="button"
+                  disabled={isReadOnly}
+                  onClick={() => toggleInterviewType(v)}
                   className={clsx(
-                    'w-4 h-4 rounded border flex items-center justify-center flex-shrink-0',
-                    checked ? 'border-indigo-500 bg-indigo-500' : 'border-gray-300 bg-white'
+                    'flex items-center gap-2 px-3 py-2.5 rounded-lg border text-sm cursor-pointer transition-colors select-none text-left',
+                    checked
+                      ? 'border-indigo-500 bg-indigo-50 text-indigo-700 font-medium'
+                      : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50',
+                    isReadOnly && 'opacity-50 cursor-not-allowed'
                   )}
                 >
-                  {checked && (
-                    <span className="text-white text-[10px] font-bold leading-none">✓</span>
-                  )}
-                </span>
-                {INTERVIEW_TYPE_LABELS[v]}
-              </button>
-            );
-          })}
-        </div>
-      </Section>
+                  <span
+                    className={clsx(
+                      'w-4 h-4 rounded border flex items-center justify-center flex-shrink-0',
+                      checked ? 'border-indigo-500 bg-indigo-500' : 'border-gray-300 bg-white'
+                    )}
+                  >
+                    {checked && (
+                      <span className="text-white text-[10px] font-bold leading-none">✓</span>
+                    )}
+                  </span>
+                  {INTERVIEW_TYPES[v]}
+                </button>
+              );
+            })}
+          </div>
+        </Section>
 
-      <Section title="Job Description" subtitle="HTML is supported: h2, ul, li, p, strong, em">
-        <textarea
-          value={form.description}
-          onChange={(e) => set('description', e.target.value)}
-          disabled={isReadOnly}
-          rows={14}
-          placeholder={`<h2>About the Role</h2>\n<p>We are looking for...</p>`}
-          className="w-full px-3 py-2 text-sm font-mono border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y disabled:bg-gray-50"
-        />
-      </Section>
+        <Section title="Job Description" subtitle="HTML is supported: h2, ul, li, p, strong, em">
+          <textarea
+            value={form.description}
+            onChange={(e) => set('description', e.target.value)}
+            disabled={isReadOnly}
+            rows={14}
+            placeholder={`<h2>About the Role</h2>\n<p>We are looking for...</p>`}
+            className="w-full px-3 py-2 text-sm font-mono border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y disabled:bg-gray-50"
+          />
+        </Section>
 
-      {/* Footer actions */}
-      <div className="flex items-center justify-between border-t border-gray-200 pt-6 pb-10">
-        <Link
-          href={`/portal/jobs/${id}`}
-          className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
-        >
-          Cancel
-        </Link>
-        {!isReadOnly && (
-          <button
-            onClick={save}
-            disabled={saving}
-            className="px-5 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+        {/* Footer actions */}
+        <div className="flex items-center justify-between border-t border-gray-200 pt-6 pb-10">
+          <Link
+            href={`/portal/jobs/${id}`}
+            className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
           >
-            {saving ? 'Saving…' : 'Save Changes'}
-          </button>
-        )}
+            Cancel
+          </Link>
+          {!isReadOnly && (
+            <button
+              onClick={save}
+              disabled={saving}
+              className="px-5 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+            >
+              {saving ? 'Saving…' : 'Save Changes'}
+            </button>
+          )}
+        </div>
       </div>
-    </div>
     </>
   );
 }

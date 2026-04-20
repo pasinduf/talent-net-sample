@@ -5,8 +5,6 @@ import {
   KnockoutCondition,
 } from './enums';
 
-// ─── Evaluation Dimension ─────────────────────────────────────────────────────
-
 export interface CreateEvaluationDimensionDto {
   name: string;
   description?: string;
@@ -32,8 +30,6 @@ export interface EvaluationDimensionDto {
   order: number;
 }
 
-// ─── Knockout Rule ────────────────────────────────────────────────────────────
-
 export interface CreateKnockoutRuleDto {
   name: string;
   description?: string;
@@ -54,8 +50,6 @@ export interface KnockoutRuleDto {
   action: KnockoutAction;
   errorMessage: string;
 }
-
-// ─── Scoring Config ───────────────────────────────────────────────────────────
 
 export interface CreateScoringConfigDto {
   totalScaleMax: number;
@@ -106,8 +100,6 @@ export interface ScoringTemplateDto {
   evaluationDimensions: EvaluationDimensionDto[];
   knockoutRules: KnockoutRuleDto[];
 }
-
-// ─── Candidate Score ──────────────────────────────────────────────────────────
 
 export interface DimensionScore {
   dimensionId: string;

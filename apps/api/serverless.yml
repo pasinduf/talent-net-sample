@@ -108,6 +108,14 @@ functions:
           path: /auth/me
           method: GET
 
+  # ─── Dashboard ────────────────────────────────────────────────────────────
+  dashboardStats:
+    handler: src/functions/dashboard/stats.handler
+    events:
+      - httpApi:
+          path: /dashboard/stats
+          method: GET
+
   # ─── Jobs ──────────────────────────────────────────────────────────────────
   createJob:
     handler: src/functions/jobs/create.handler

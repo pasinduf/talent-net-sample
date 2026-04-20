@@ -14,6 +14,15 @@ import {
   EvaluationPhase,
   KnockoutCondition,
   KnockoutAction,
+  DEPARTMENTS,
+  EXPERIENCE_LEVELS,
+  EMPLOYMENT_TYPES,
+  INTERVIEW_TYPES,
+  QUESTION_TYPES,
+  EVALUATION_PHASES,
+  DIMENSION_TYPES,
+  DIMENSION_TYPE_HELP,
+  KNOCKOUT_CONDITIONS,
 } from '@talent-net/types';
 import { API, authHeaders } from '@/lib/api';
 import { ArrowLeft } from 'lucide-react';
@@ -32,76 +41,7 @@ function extractApiError(body: any, status: number): string {
   return err.message ?? `Server error ${status}`;
 }
 
-const DEPARTMENTS = [
-  'Engineering', 'Design', 'Data & Analytics', 'Infrastructure', 'Marketing',
-  'Human Resources', 'Finance', 'Sales', 'Operations', 'Legal', 'Product',
-];
-
-const LEVEL_LABELS: Record<ExperienceLevel, string> = {
-  [ExperienceLevel.ENTRY]: 'Entry Level',
-  [ExperienceLevel.JUNIOR]: 'Junior',
-  [ExperienceLevel.MID]: 'Mid Level',
-  [ExperienceLevel.SENIOR]: 'Senior',
-  [ExperienceLevel.LEAD]: 'Lead',
-  [ExperienceLevel.EXECUTIVE]: 'Executive',
-};
-
-const TYPE_LABELS: Record<EmploymentType, string> = {
-  [EmploymentType.FULL_TIME]: 'Full-time',
-  [EmploymentType.PART_TIME]: 'Part-time',
-  [EmploymentType.CONTRACT]: 'Contract',
-  [EmploymentType.INTERNSHIP]: 'Internship',
-  [EmploymentType.FREELANCE]: 'Freelance',
-};
-
-const INTERVIEW_TYPE_LABELS: Record<InterviewType, string> = {
-  [InterviewType.TAKE_HOME]: 'Take-home Assignment',
-  [InterviewType.AI]: 'AI Interview',
-  [InterviewType.MANUAL]: 'Manual Interview',
-  [InterviewType.HYBRID]: 'Hybrid (AI + Manual)',
-};
-
-const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
-  [QuestionType.TEXT]: 'Short text',
-  [QuestionType.TEXTAREA]: 'Long text',
-  [QuestionType.YES_NO]: 'Yes / No',
-  [QuestionType.SINGLE_CHOICE]: 'Single choice',
-  [QuestionType.MULTI_CHOICE]: 'Multiple choice',
-};
-
-const PHASE_LABELS: Record<EvaluationPhase, string> = {
-  [EvaluationPhase.PRE_INTERVIEW]: 'Pre-Interview',
-  [EvaluationPhase.POST_INTERVIEW]: 'Post-Interview',
-  [EvaluationPhase.BOTH]: 'Both Phases',
-};
-
-const DIM_TYPE_LABELS: Record<DimensionType, string> = {
-  [DimensionType.MANDATORY]: 'Mandatory',
-  [DimensionType.OPTIONAL]: 'Optional',
-  [DimensionType.ADVISORY]: 'Advisory',
-  [DimensionType.DISQUALIFYING]: 'Disqualifying',
-};
-
-const DIM_TYPE_HELP: Record<DimensionType, string> = {
-  [DimensionType.MANDATORY]: 'Must be scored; contributes to total',
-  [DimensionType.OPTIONAL]: 'Scored if possible; contributes to total',
-  [DimensionType.ADVISORY]: 'Informational only; does not affect total score',
-  [DimensionType.DISQUALIFYING]: 'Failing this dimension flags the candidate for non-progression',
-};
-
-const KNOCKOUT_CONDITION_LABELS: Record<KnockoutCondition, string> = {
-  [KnockoutCondition.CERTIFICATION_REQUIRED]: 'Certification Required',
-  [KnockoutCondition.WORK_AUTHORIZATION]: 'Work Authorization',
-  [KnockoutCondition.LANGUAGE_REQUIREMENT]: 'Language Requirement',
-  [KnockoutCondition.AVAILABILITY_REQUIREMENT]: 'Availability Requirement',
-  [KnockoutCondition.MINIMUM_EDUCATION]: 'Minimum Education',
-  [KnockoutCondition.MINIMUM_EXPERIENCE_YEARS]: 'Minimum Years of Experience',
-  [KnockoutCondition.LOCATION_REQUIREMENT]: 'Location Requirement',
-  [KnockoutCondition.CUSTOM]: 'Custom Rule',
-};
-
 const today = new Date().toISOString().split('T')[0];
-
 interface ScreeningQuestionDraft {
   _id: string;
   question: string;
@@ -550,7 +490,7 @@ function StepRoleDetails({ form, onChange }: { form: RoleForm; onChange: (f: Rol
               className={inputCls}
             >
               <option value="">Select level</option>
-              {Object.entries(LEVEL_LABELS).map(([v, l]) => (
+              {Object.entries(EXPERIENCE_LEVELS).map(([v, l]) => (
                 <option key={v} value={v}>
                   {l}
                 </option>
@@ -565,7 +505,7 @@ function StepRoleDetails({ form, onChange }: { form: RoleForm; onChange: (f: Rol
               className={inputCls}
             >
               <option value="">Select type</option>
-              {Object.entries(TYPE_LABELS).map(([v, l]) => (
+              {Object.entries(EMPLOYMENT_TYPES).map(([v, l]) => (
                 <option key={v} value={v}>
                   {l}
                 </option>
@@ -664,7 +604,11 @@ function StepRoleDetails({ form, onChange }: { form: RoleForm; onChange: (f: Rol
 
       {/* Interview stages */}
       <Section
-        title={<>Interview Stages <span className="text-red-500">*</span></>}
+        title={
+          <>
+            Interview Stages <span className="text-red-500">*</span>
+          </>
+        }
         subtitle="Select the stages that will be part of this hiring process"
       >
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -692,7 +636,7 @@ function StepRoleDetails({ form, onChange }: { form: RoleForm; onChange: (f: Rol
                     <span className="text-white text-[10px] font-bold leading-none">✓</span>
                   )}
                 </span>
-                {INTERVIEW_TYPE_LABELS[v]}
+                {INTERVIEW_TYPES[v]}
               </button>
             );
           })}
@@ -790,7 +734,7 @@ function StepApplicationForm({
                     )}
                   </p>
                   <p className="text-xs text-gray-400 mt-0.5">
-                    {QUESTION_TYPE_LABELS[q.type]}
+                    {QUESTION_TYPES[q.type]}
                     {CHOICE_TYPES.has(q.type) && q.options.length > 0 && ` · Options: ${q.options.join(', ')}`}
                     {q.helpText && ` · ${q.helpText}`}
                   </p>
@@ -815,7 +759,7 @@ function StepApplicationForm({
             <div>
               <label className="block text-xs text-gray-500 mb-1">Type</label>
               <select value={draft.type} onChange={(e) => updateDraft('type', e.target.value as QuestionType)} className={inputCls}>
-                {Object.entries(QUESTION_TYPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                {Object.entries(QUESTION_TYPES).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
               </select>
             </div>
             {CHOICE_TYPES.has(draft.type) && (
@@ -951,7 +895,10 @@ function StepScoringConfig({
         <div className="grid grid-cols-2 gap-6">
           <Field label="Pre-Interview Weight (%)" required>
             <input
-              type="number" min="0" max="100" step="1"
+              type="number"
+              min="0"
+              max="100"
+              step="1"
               value={scoring.preInterviewWeight}
               onChange={(e) => setPreWeight(e.target.value)}
               className={inputCls}
@@ -959,14 +906,20 @@ function StepScoringConfig({
           </Field>
           <Field label="Post-Interview Weight (%)" required>
             <input
-              type="number" min="0" max="100" step="1"
+              type="number"
+              min="0"
+              max="100"
+              step="1"
               value={scoring.postInterviewWeight}
               onChange={(e) => setScoringField('postInterviewWeight', e.target.value)}
               className={inputCls}
             />
           </Field>
         </div>
-        <PhaseBar pre={Number(scoring.preInterviewWeight)} post={Number(scoring.postInterviewWeight)} />
+        <PhaseBar
+          pre={Number(scoring.preInterviewWeight)}
+          post={Number(scoring.postInterviewWeight)}
+        />
       </Section>
 
       {/* Thresholds */}
@@ -975,20 +928,53 @@ function StepScoringConfig({
         subtitle="Percentage thresholds that determine automatic pipeline routing."
       >
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Field label="Shortlist Threshold (%)" hint="Candidates at or above this score are auto-shortlisted">
-            <input type="number" min="0" max="100" value={scoring.shortlistThreshold} onChange={(e) => setScoringField('shortlistThreshold', e.target.value)} className={inputCls} />
+          <Field
+            label="Shortlist Threshold (%)"
+            hint="Candidates at or above this score are auto-shortlisted"
+          >
+            <input
+              type="number"
+              min="0"
+              max="100"
+              value={scoring.shortlistThreshold}
+              onChange={(e) => setScoringField('shortlistThreshold', e.target.value)}
+              className={inputCls}
+            />
           </Field>
           <Field label="Pass Threshold (%)" hint="Minimum score considered passing">
-            <input type="number" min="0" max="100" value={scoring.passThreshold} onChange={(e) => setScoringField('passThreshold', e.target.value)} className={inputCls} />
+            <input
+              type="number"
+              min="0"
+              max="100"
+              value={scoring.passThreshold}
+              onChange={(e) => setScoringField('passThreshold', e.target.value)}
+              className={inputCls}
+            />
           </Field>
-          <Field label="Manual Review Threshold (%)" hint="Scores below this require human review before any action">
-            <input type="number" min="0" max="100" value={scoring.manualReviewThreshold} onChange={(e) => setScoringField('manualReviewThreshold', e.target.value)} className={inputCls} />
+          <Field
+            label="Manual Review Threshold (%)"
+            hint="Scores below this require human review before any action"
+          >
+            <input
+              type="number"
+              min="0"
+              max="100"
+              value={scoring.manualReviewThreshold}
+              onChange={(e) => setScoringField('manualReviewThreshold', e.target.value)}
+              className={inputCls}
+            />
           </Field>
         </div>
         <div className="mt-3 text-xs text-gray-400 flex gap-2 flex-wrap">
-          <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded">≥ {scoring.shortlistThreshold}% → Auto-shortlist</span>
-          <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded">≥ {scoring.passThreshold}% → Pass</span>
-          <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded">&lt; {scoring.manualReviewThreshold}% → Manual review</span>
+          <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded">
+            ≥ {scoring.shortlistThreshold}% → Auto-shortlist
+          </span>
+          <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded">
+            ≥ {scoring.passThreshold}% → Pass
+          </span>
+          <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded">
+            &lt; {scoring.manualReviewThreshold}% → Manual review
+          </span>
         </div>
       </Section>
 
@@ -1008,7 +994,10 @@ function StepScoringConfig({
             </div>
             <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
               <div
-                className={clsx('h-full rounded-full transition-all', weightOk ? 'bg-green-500' : totalWeight > 100 ? 'bg-red-500' : 'bg-amber-400')}
+                className={clsx(
+                  'h-full rounded-full transition-all',
+                  weightOk ? 'bg-green-500' : totalWeight > 100 ? 'bg-red-500' : 'bg-amber-400'
+                )}
                 style={{ width: `${Math.min(100, totalWeight)}%` }}
               />
             </div>
@@ -1034,16 +1023,29 @@ function StepScoringConfig({
                   <tr key={d._id} className="hover:bg-gray-50">
                     <td className="px-4 py-2.5 font-medium text-gray-800">
                       {d.name}
-                      {d.description && <div className="text-xs text-gray-400 font-normal">{d.description}</div>}
+                      {d.description && (
+                        <div className="text-xs text-gray-400 font-normal">{d.description}</div>
+                      )}
                     </td>
-                    <td className="px-3 py-2.5 text-gray-500 text-xs">{PHASE_LABELS[d.phase]}</td>
+                    <td className="px-3 py-2.5 text-gray-500 text-xs">
+                      {EVALUATION_PHASES[d.phase]}
+                    </td>
                     <td className="px-3 py-2.5">
                       <DimTypeBadge type={d.type} />
                     </td>
-                    <td className="px-3 py-2.5 text-right font-semibold text-indigo-600">{d.weight}%</td>
-                    <td className="px-3 py-2.5 text-right text-gray-500 text-xs">{d.minimumThreshold ? `${d.minimumThreshold}%` : '—'}</td>
+                    <td className="px-3 py-2.5 text-right font-semibold text-indigo-600">
+                      {d.weight}%
+                    </td>
+                    <td className="px-3 py-2.5 text-right text-gray-500 text-xs">
+                      {d.minimumThreshold ? `${d.minimumThreshold}%` : '—'}
+                    </td>
                     <td className="px-3 py-2.5 text-right">
-                      <button onClick={() => removeDimension(d._id)} className="text-red-400 hover:text-red-600 text-xs">Remove</button>
+                      <button
+                        onClick={() => removeDimension(d._id)}
+                        className="text-red-400 hover:text-red-600 text-xs"
+                      >
+                        Remove
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -1054,7 +1056,9 @@ function StepScoringConfig({
 
         {/* Add dimension form */}
         <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3">
-          <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Add Dimension</p>
+          <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+            Add Dimension
+          </p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div className="col-span-2">
               <input
@@ -1066,7 +1070,10 @@ function StepScoringConfig({
             </div>
             <div>
               <input
-                type="number" min="0.1" max="100" step="0.1"
+                type="number"
+                min="0.1"
+                max="100"
+                step="0.1"
                 value={dimDraft.weight}
                 onChange={(e) => setDimDraft((d) => ({ ...d, weight: e.target.value }))}
                 placeholder="Weight %"
@@ -1075,7 +1082,10 @@ function StepScoringConfig({
             </div>
             <div>
               <input
-                type="number" min="0" max="100" step="1"
+                type="number"
+                min="0"
+                max="100"
+                step="1"
                 value={dimDraft.minimumThreshold}
                 onChange={(e) => setDimDraft((d) => ({ ...d, minimumThreshold: e.target.value }))}
                 placeholder="Min threshold %"
@@ -1086,26 +1096,58 @@ function StepScoringConfig({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div>
               <label className="block text-xs text-gray-500 mb-1">Phase</label>
-              <select value={dimDraft.phase} onChange={(e) => setDimDraft((d) => ({ ...d, phase: e.target.value as EvaluationPhase }))} className={inputCls}>
-                {Object.entries(PHASE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+              <select
+                value={dimDraft.phase}
+                onChange={(e) =>
+                  setDimDraft((d) => ({ ...d, phase: e.target.value as EvaluationPhase }))
+                }
+                className={inputCls}
+              >
+                {Object.entries(EVALUATION_PHASES).map(([v, l]) => (
+                  <option key={v} value={v}>
+                    {l}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
               <label className="block text-xs text-gray-500 mb-1">Type</label>
-              <select value={dimDraft.type} onChange={(e) => setDimDraft((d) => ({ ...d, type: e.target.value as DimensionType }))} className={inputCls}>
-                {Object.entries(DIM_TYPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+              <select
+                value={dimDraft.type}
+                onChange={(e) =>
+                  setDimDraft((d) => ({ ...d, type: e.target.value as DimensionType }))
+                }
+                className={inputCls}
+              >
+                {Object.entries(DIMENSION_TYPES).map(([v, l]) => (
+                  <option key={v} value={v}>
+                    {l}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="col-span-2 flex items-end gap-2">
-              <input value={dimDraft.description} onChange={(e) => setDimDraft((d) => ({ ...d, description: e.target.value }))} placeholder="Description (optional)" className={clsx(inputCls, 'flex-1')} />
+              <input
+                value={dimDraft.description}
+                onChange={(e) => setDimDraft((d) => ({ ...d, description: e.target.value }))}
+                placeholder="Description (optional)"
+                className={clsx(inputCls, 'flex-1')}
+              />
               <label className="flex items-center gap-1.5 text-xs text-gray-600 whitespace-nowrap pb-0.5">
-                <input type="checkbox" checked={dimDraft.isVisibleToAllReviewers} onChange={(e) => setDimDraft((d) => ({ ...d, isVisibleToAllReviewers: e.target.checked }))} className="rounded border-gray-300" />
+                <input
+                  type="checkbox"
+                  checked={dimDraft.isVisibleToAllReviewers}
+                  onChange={(e) =>
+                    setDimDraft((d) => ({ ...d, isVisibleToAllReviewers: e.target.checked }))
+                  }
+                  className="rounded border-gray-300"
+                />
                 Visible to all
               </label>
             </div>
           </div>
           {dimDraft.type && (
-            <p className="text-xs text-gray-400 italic">{DIM_TYPE_HELP[dimDraft.type]}</p>
+            <p className="text-xs text-gray-400 italic">{DIMENSION_TYPE_HELP[dimDraft.type]}</p>
           )}
           <div className="flex justify-end">
             <button
@@ -1141,13 +1183,22 @@ function StepScoringConfig({
                 {knockouts.map((k) => (
                   <tr key={k._id} className="hover:bg-gray-50">
                     <td className="px-4 py-2.5 font-medium text-gray-800">{k.name}</td>
-                    <td className="px-3 py-2.5 text-gray-500 text-xs">{KNOCKOUT_CONDITION_LABELS[k.condition]}</td>
-                    <td className="px-3 py-2.5 font-mono text-xs text-gray-700">{k.conditionValue}</td>
+                    <td className="px-3 py-2.5 text-gray-500 text-xs">
+                      {KNOCKOUT_CONDITIONS[k.condition]}
+                    </td>
+                    <td className="px-3 py-2.5 font-mono text-xs text-gray-700">
+                      {k.conditionValue}
+                    </td>
                     <td className="px-3 py-2.5">
                       <KnockoutActionBadge action={k.action} />
                     </td>
                     <td className="px-3 py-2.5 text-right">
-                      <button onClick={() => removeKnockout(k._id)} className="text-red-400 hover:text-red-600 text-xs">Remove</button>
+                      <button
+                        onClick={() => removeKnockout(k._id)}
+                        className="text-red-400 hover:text-red-600 text-xs"
+                      >
+                        Remove
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -1158,25 +1209,58 @@ function StepScoringConfig({
 
         {/* Add knockout form */}
         <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3">
-          <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Add Knockout Rule</p>
+          <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+            Add Knockout Rule
+          </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <input value={koDraft.name} onChange={(e) => setKoDraft((k) => ({ ...k, name: e.target.value }))} placeholder="Rule name (e.g. Work Authorization Required)" className={inputCls} />
-            <input value={koDraft.errorMessage} onChange={(e) => setKoDraft((k) => ({ ...k, errorMessage: e.target.value }))} placeholder="Error message shown in review" className={inputCls} />
+            <input
+              value={koDraft.name}
+              onChange={(e) => setKoDraft((k) => ({ ...k, name: e.target.value }))}
+              placeholder="Rule name (e.g. Work Authorization Required)"
+              className={inputCls}
+            />
+            <input
+              value={koDraft.errorMessage}
+              onChange={(e) => setKoDraft((k) => ({ ...k, errorMessage: e.target.value }))}
+              placeholder="Error message shown in review"
+              className={inputCls}
+            />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <div>
               <label className="block text-xs text-gray-500 mb-1">Condition</label>
-              <select value={koDraft.condition} onChange={(e) => setKoDraft((k) => ({ ...k, condition: e.target.value as KnockoutCondition }))} className={inputCls}>
-                {Object.entries(KNOCKOUT_CONDITION_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+              <select
+                value={koDraft.condition}
+                onChange={(e) =>
+                  setKoDraft((k) => ({ ...k, condition: e.target.value as KnockoutCondition }))
+                }
+                className={inputCls}
+              >
+                {Object.entries(KNOCKOUT_CONDITIONS).map(([v, l]) => (
+                  <option key={v} value={v}>
+                    {l}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
               <label className="block text-xs text-gray-500 mb-1">Expected value</label>
-              <input value={koDraft.conditionValue} onChange={(e) => setKoDraft((k) => ({ ...k, conditionValue: e.target.value }))} placeholder="e.g. yes, 5, Bangkok" className={inputCls} />
+              <input
+                value={koDraft.conditionValue}
+                onChange={(e) => setKoDraft((k) => ({ ...k, conditionValue: e.target.value }))}
+                placeholder="e.g. yes, 5, Bangkok"
+                className={inputCls}
+              />
             </div>
             <div>
               <label className="block text-xs text-gray-500 mb-1">Action if triggered</label>
-              <select value={koDraft.action} onChange={(e) => setKoDraft((k) => ({ ...k, action: e.target.value as KnockoutAction }))} className={inputCls}>
+              <select
+                value={koDraft.action}
+                onChange={(e) =>
+                  setKoDraft((k) => ({ ...k, action: e.target.value as KnockoutAction }))
+                }
+                className={inputCls}
+              >
                 <option value={KnockoutAction.REJECTION_REVIEW}>Flag for Rejection Review</option>
                 <option value={KnockoutAction.NON_PROGRESSION}>Non Progression</option>
               </select>
@@ -1215,12 +1299,24 @@ function StepReview({ role, questions, scoring, dimensions, knockouts }: {
         <dl className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-3 text-sm">
           <ReviewRow label="Title" value={role.title} />
           <ReviewRow label="Department" value={role.department} />
-          <ReviewRow label="Level" value={LEVEL_LABELS[role.level as ExperienceLevel] ?? '—'} />
-          <ReviewRow label="Type" value={TYPE_LABELS[role.employmentType as EmploymentType] ?? '—'} />
-          <ReviewRow label="Location" value={`${role.location}${role.isRemote ? ' (Remote)' : ''}`} />
+          <ReviewRow
+            label="Level"
+            value={EXPERIENCE_LEVELS[role.level as ExperienceLevel] ?? '—'}
+          />
+          <ReviewRow
+            label="Type"
+            value={EMPLOYMENT_TYPES[role.employmentType as EmploymentType] ?? '—'}
+          />
+          <ReviewRow
+            label="Location"
+            value={`${role.location}${role.isRemote ? ' (Remote)' : ''}`}
+          />
           <ReviewRow label="Head count" value={role.headcount || '1'} />
           {role.salaryMin && role.salaryMax && (
-            <ReviewRow label="Salary" value={`${role.salaryCurrency} ${Number(role.salaryMin).toLocaleString()} – ${Number(role.salaryMax).toLocaleString()}`} />
+            <ReviewRow
+              label="Salary"
+              value={`${role.salaryCurrency} ${Number(role.salaryMin).toLocaleString()} – ${Number(role.salaryMax).toLocaleString()}`}
+            />
           )}
           <ReviewRow label="Deadline" value={role.applicationDeadline || 'Open-ended'} />
           {role.interviewTypes.length > 0 && (
@@ -1228,8 +1324,11 @@ function StepReview({ role, questions, scoring, dimensions, knockouts }: {
               <dt className="text-xs text-gray-500 mb-1">Interview Stages</dt>
               <dd className="flex flex-wrap gap-1">
                 {role.interviewTypes.map((t) => (
-                  <span key={t} className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs rounded-full">
-                    {INTERVIEW_TYPE_LABELS[t]}
+                  <span
+                    key={t}
+                    className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs rounded-full"
+                  >
+                    {INTERVIEW_TYPES[t]}
                   </span>
                 ))}
               </dd>
@@ -1238,7 +1337,9 @@ function StepReview({ role, questions, scoring, dimensions, knockouts }: {
         </dl>
         {role.description && (
           <details className="mt-3">
-            <summary className="text-xs text-indigo-600 cursor-pointer select-none">Preview description</summary>
+            <summary className="text-xs text-indigo-600 cursor-pointer select-none">
+              Preview description
+            </summary>
             <div
               className="mt-2 prose prose-sm prose-gray max-w-none border rounded-lg p-3 bg-white"
               dangerouslySetInnerHTML={{ __html: role.description }}
@@ -1247,21 +1348,27 @@ function StepReview({ role, questions, scoring, dimensions, knockouts }: {
         )}
       </Section>
 
-      <Section title={`Application Form (${questions.length} question${questions.length !== 1 ? 's' : ''})`}>
-        {questions.length === 0
-          ? <p className="text-sm text-gray-400">No screening questions added.</p>
-          : (
-            <ol className="text-sm space-y-1.5 list-decimal list-inside">
-              {questions.map((q) => (
-                <li key={q._id} className="text-gray-700">
-                  {q.question}
-                  <span className="ml-2 text-xs text-gray-400">({QUESTION_TYPE_LABELS[q.type]})</span>
-                  {q.isRequired && <span className="ml-1 text-red-500 text-xs">*</span>}
-                  {q.isKnockout && <span className="ml-2 px-1 bg-red-100 text-red-700 text-xs rounded">Knockout</span>}
-                </li>
-              ))}
-            </ol>
-          )}
+      <Section
+        title={`Application Form (${questions.length} question${questions.length !== 1 ? 's' : ''})`}
+      >
+        {questions.length === 0 ? (
+          <p className="text-sm text-gray-400">No screening questions added.</p>
+        ) : (
+          <ol className="text-sm space-y-1.5 list-decimal list-inside">
+            {questions.map((q) => (
+              <li key={q._id} className="text-gray-700">
+                {q.question}
+                <span className="ml-2 text-xs text-gray-400">({QUESTION_TYPES[q.type]})</span>
+                {q.isRequired && <span className="ml-1 text-red-500 text-xs">*</span>}
+                {q.isKnockout && (
+                  <span className="ml-2 px-1 bg-red-100 text-red-700 text-xs rounded">
+                    Knockout
+                  </span>
+                )}
+              </li>
+            ))}
+          </ol>
+        )}
       </Section>
 
       <Section title="Scoring Configuration">
@@ -1290,9 +1397,11 @@ function StepReview({ role, questions, scoring, dimensions, knockouts }: {
                 <li key={d._id} className="flex items-center gap-2">
                   <DimTypeBadge type={d.type} />
                   <span className="text-gray-800 font-medium">{d.name}</span>
-                  <span className="text-gray-400 text-xs">{PHASE_LABELS[d.phase]}</span>
+                  <span className="text-gray-400 text-xs">{EVALUATION_PHASES[d.phase]}</span>
                   <span className="ml-auto font-semibold text-indigo-600 text-xs">{d.weight}%</span>
-                  {d.minimumThreshold && <span className="text-gray-400 text-xs">min {d.minimumThreshold}%</span>}
+                  {d.minimumThreshold && (
+                    <span className="text-gray-400 text-xs">min {d.minimumThreshold}%</span>
+                  )}
                 </li>
               ))}
             </ul>
@@ -1309,7 +1418,9 @@ function StepReview({ role, questions, scoring, dimensions, knockouts }: {
                 <li key={k._id} className="flex items-center gap-2">
                   <KnockoutActionBadge action={k.action} />
                   <span className="text-gray-800 font-medium">{k.name}</span>
-                  <span className="text-gray-400 text-xs">{KNOCKOUT_CONDITION_LABELS[k.condition]} = {k.conditionValue}</span>
+                  <span className="text-gray-400 text-xs">
+                    {KNOCKOUT_CONDITIONS[k.condition]} = {k.conditionValue}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -1321,8 +1432,8 @@ function StepReview({ role, questions, scoring, dimensions, knockouts }: {
         <p className="text-sm font-semibold text-indigo-800">Ready to submit?</p>
         <p className="text-xs text-indigo-600 mt-1">
           <strong>Save as Draft</strong> keeps the role private so you can continue editing.{' '}
-          <strong>Publish Now</strong> makes it live on the careers portal immediately.
-          Scoring rules can be revised after publishing subject to business governance.
+          <strong>Publish Now</strong> makes it live on the careers portal immediately. Scoring
+          rules can be revised after publishing subject to business governance.
         </p>
       </div>
     </div>
@@ -1399,14 +1510,16 @@ function PhaseBar({ pre, post }: { pre: number; post: number }) {
 
 function DimTypeBadge({ type }: { type: DimensionType }) {
   return (
-    <span className={clsx(
-      'px-2 py-0.5 rounded-full text-xs font-medium',
-      type === DimensionType.MANDATORY && 'bg-blue-100 text-blue-700',
-      type === DimensionType.OPTIONAL && 'bg-gray-100 text-gray-600',
-      type === DimensionType.ADVISORY && 'bg-amber-100 text-amber-700',
-      type === DimensionType.DISQUALIFYING && 'bg-red-100 text-red-700',
-    )}>
-      {DIM_TYPE_LABELS[type]}
+    <span
+      className={clsx(
+        'px-2 py-0.5 rounded-full text-xs font-medium',
+        type === DimensionType.MANDATORY && 'bg-blue-100 text-blue-700',
+        type === DimensionType.OPTIONAL && 'bg-gray-100 text-gray-600',
+        type === DimensionType.ADVISORY && 'bg-amber-100 text-amber-700',
+        type === DimensionType.DISQUALIFYING && 'bg-red-100 text-red-700'
+      )}
+    >
+      {DIMENSION_TYPES[type]}
     </span>
   );
 }

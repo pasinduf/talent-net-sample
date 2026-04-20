@@ -62,7 +62,7 @@ const INTERVIEW_LABELS: Record<InterviewType, string> = {
   [InterviewType.HYBRID]: 'Hybrid (AI + Manual)',
 };
 
-const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
+const QUESTION_TYPES: Record<QuestionType, string> = {
   [QuestionType.TEXT]: 'Short text',
   [QuestionType.TEXTAREA]: 'Long text',
   [QuestionType.YES_NO]: 'Yes / No',
@@ -559,7 +559,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                                         }))
                                       }
                                     >
-                                      {Object.entries(QUESTION_TYPE_LABELS).map(([v, l]) => (
+                                      {Object.entries(QUESTION_TYPES).map(([v, l]) => (
                                         <option key={v} value={v}>
                                           {l}
                                         </option>
@@ -647,7 +647,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                                     <p className="text-sm text-gray-800">{q.question}</p>
                                     <div className="flex flex-wrap gap-2 mt-1.5">
                                       <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs">
-                                        {QUESTION_TYPE_LABELS[q.type as QuestionType]}
+                                        {QUESTION_TYPES[q.type as QuestionType]}
                                       </span>
                                       {q.isRequired && (
                                         <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs">
@@ -723,7 +723,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                             setAddForm((f) => ({ ...f, type: e.target.value as QuestionType }))
                           }
                         >
-                          {Object.entries(QUESTION_TYPE_LABELS).map(([v, l]) => (
+                          {Object.entries(QUESTION_TYPES).map(([v, l]) => (
                             <option key={v} value={v}>
                               {l}
                             </option>

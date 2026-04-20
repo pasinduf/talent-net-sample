@@ -1,9 +1,9 @@
+'use client';
+
 import Link from 'next/link';
-import type { Metadata } from 'next';
+import useSWR from 'swr';
 import { LucideIcon, NotebookPen, Briefcase, Inbox, Users, CalendarCheck, BarChart2 } from 'lucide-react';
-
-
-export const metadata: Metadata = { title: 'HR Dashboard — TalentNet' };
+import { API, fetcher } from '@/lib/api';
 
 const QUICK_LINKS: { label: string; href: string; description: string; icon: LucideIcon }[] = [
   {
@@ -45,9 +45,18 @@ const QUICK_LINKS: { label: string; href: string; description: string; icon: Luc
 ];
 
 export default function DashboardPage() {
+  const { data: statsData } = useSWR(`${API}/dashboard/stats`, fetcher);
+  const stats = statsData?.data;
+
+  const STAT_CARDS = [
+    { label: 'Open Roles', value: stats?.openRoles, color: 'text-indigo-600' },
+    { label: 'Active Applications', value: stats?.activeApplications, color: 'text-gray-900' },
+    { label: 'Interviews This Week', value: stats?.interviewsThisWeek, color: 'text-gray-900' },
+    { label: 'Offers Extended', value: stats?.offersExtended, color: 'text-gray-900' },
+  ];
+
   return (
     <div className="p-6 max-w-5xl">
-      {/* Welcome */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">HR Dashboard</h1>
         <p className="text-sm text-gray-500 mt-1">
@@ -55,24 +64,19 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Stat cards — static placeholders until API is connected */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-        {[
-          { label: 'Open Roles', value: '8', color: 'text-indigo-600' },
-          { label: 'Active Applications', value: '—', color: 'text-gray-900' },
-          { label: 'Interviews This Week', value: '—', color: 'text-gray-900' },
-          { label: 'Offers Extended', value: '—', color: 'text-gray-900' },
-        ].map((stat) => (
+        {STAT_CARDS.map((stat) => (
           <div key={stat.label} className="bg-white rounded-xl border border-gray-200 p-5">
             <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
               {stat.label}
             </p>
-            <p className={`text-3xl font-bold mt-1 ${stat.color}`}>{stat.value}</p>
+            <p className={`text-3xl font-bold mt-1 ${stat.color}`}>
+              {stat.value ?? '—'}
+            </p>
           </div>
         ))}
       </div>
 
-      {/* Quick links */}
       <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
         Quick Actions
       </h2>
@@ -89,7 +93,6 @@ export default function DashboardPage() {
                 {item.label}
               </h3>
             </div>
-
             <p className="text-xs text-gray-500 mt-1">{item.description}</p>
           </Link>
         ))}

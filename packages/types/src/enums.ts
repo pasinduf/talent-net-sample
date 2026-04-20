@@ -1,4 +1,3 @@
-// ─── User & Auth ──────────────────────────────────────────────────────────────
 
 export enum UserRole {
   APPLICANT = 'applicant',
@@ -7,8 +6,6 @@ export enum UserRole {
   INTERVIEWER = 'interviewer',
   SYSTEM_SUPERVISOR = 'system_supervisor',
 }
-
-// ─── Job ──────────────────────────────────────────────────────────────────────
 
 export enum JobStatus {
   DRAFT = 'draft',
@@ -42,7 +39,6 @@ export enum InterviewType {
   TAKE_HOME = 'take_home'
 }
 
-// ─── Scoring & Evaluation ────────────────────────────────────────────────────
 
 export enum DimensionType {
   MANDATORY = 'mandatory',
@@ -74,7 +70,6 @@ export enum KnockoutAction {
   MANUAL_REVIEW_REQUIRED = 'manual_review_required',
 }
 
-// ─── Application ──────────────────────────────────────────────────────────────
 
 export enum ApplicationStatus {
   APPLIED = 'applied',
@@ -98,7 +93,6 @@ export enum QuestionType {
   YES_NO = 'yes_no',
 }
 
-// ─── Interview ────────────────────────────────────────────────────────────────
 
 export enum InterviewStatus {
   PENDING_INVITE = 'pending_invite',
@@ -126,7 +120,6 @@ export enum IntegritySignalSeverity {
   ESCALATION_REQUIRED = 'escalation_required',
 }
 
-// ─── Notification ─────────────────────────────────────────────────────────────
 
 export enum NotificationType {
   APPLICATION_CONFIRMATION = 'application_confirmation',
@@ -150,7 +143,6 @@ export enum NotificationChannel {
   IN_APP = 'in_app',
 }
 
-// ─── Consent ──────────────────────────────────────────────────────────────────
 
 export enum ConsentPurpose {
   APPLICATION_PROCESSING = 'application_processing',
@@ -159,7 +151,6 @@ export enum ConsentPurpose {
   MARKETING = 'marketing',
 }
 
-// ─── Audit ────────────────────────────────────────────────────────────────────
 
 export enum AuditAction {
   JOB_CREATED = 'job_created',

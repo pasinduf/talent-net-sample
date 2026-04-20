@@ -25,14 +25,14 @@ const PHASE_LABELS: Record<EvaluationPhase, string> = {
   [EvaluationPhase.BOTH]: 'Both Phases',
 };
 
-const DIMENSION_TYPE_LABELS: Record<DimensionType, string> = {
+const DIMENSION_TYPES: Record<DimensionType, string> = {
   [DimensionType.MANDATORY]: 'Mandatory',
   [DimensionType.OPTIONAL]: 'Optional',
   [DimensionType.ADVISORY]: 'Advisory',
   [DimensionType.DISQUALIFYING]: 'Disqualifying',
 };
 
-const KNOCKOUT_CONDITION_LABELS: Record<KnockoutCondition, string> = {
+const KNOCKOUT_CONDITIONS: Record<KnockoutCondition, string> = {
   [KnockoutCondition.CERTIFICATION_REQUIRED]: 'Certification Required',
   [KnockoutCondition.WORK_AUTHORIZATION]: 'Work Authorization',
   [KnockoutCondition.LANGUAGE_REQUIREMENT]: 'Language Requirement',
@@ -761,7 +761,7 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
                                   value={ef.type ?? DimensionType.MANDATORY}
                                   onChange={(e) => setEditingDimForm((f) => ({ ...f, type: e.target.value as DimensionType }))}
                                 >
-                                  {Object.entries(DIMENSION_TYPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                                  {Object.entries(DIMENSION_TYPES).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                                 </select>
                               </div>
                               <div className="flex gap-2">
@@ -807,7 +807,7 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
                             <td className="px-4 py-3 text-gray-600 text-xs">{PHASE_LABELS[d.phase as EvaluationPhase]}</td>
                             <td className="px-4 py-3">
                               <span className={clsx('px-2 py-0.5 rounded-full text-xs font-medium', DIM_TYPE_COLORS[d.type as DimensionType])}>
-                                {DIMENSION_TYPE_LABELS[d.type as DimensionType]}
+                                {DIMENSION_TYPES[d.type as DimensionType]}
                               </span>
                             </td>
                             <td className="px-4 py-3 text-right font-semibold text-indigo-600">{d.weight}%</td>
@@ -869,7 +869,7 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
                     onChange={(e) => setDimForm((f) => ({ ...f, type: e.target.value as DimensionType }))}
                     className={inputCls}
                   >
-                    {Object.entries(DIMENSION_TYPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                    {Object.entries(DIMENSION_TYPES).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                   </select>
                 </div>
                 <div className="flex items-center gap-3">
@@ -964,7 +964,7 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
                                   value={ef.condition ?? KnockoutCondition.WORK_AUTHORIZATION}
                                   onChange={(e) => setEditingKnockoutForm((f) => ({ ...f, condition: e.target.value as KnockoutCondition }))}
                                 >
-                                  {Object.entries(KNOCKOUT_CONDITION_LABELS).map(([v, l]) => (
+                                  {Object.entries(KNOCKOUT_CONDITIONS).map(([v, l]) => (
                                     <option key={v} value={v}>{l}</option>
                                   ))}
                                 </select>
@@ -1002,7 +1002,7 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
                               {r.errorMessage && <div className="text-xs text-gray-400 font-normal">{r.errorMessage}</div>}
                             </td>
                             <td className="px-4 py-3 text-gray-600 text-xs">
-                              {KNOCKOUT_CONDITION_LABELS[r.condition as KnockoutCondition]}
+                              {KNOCKOUT_CONDITIONS[r.condition as KnockoutCondition]}
                             </td>
                             <td className="px-4 py-3 font-mono text-xs text-gray-700">{r.conditionValue}</td>
                             <td className="px-4 py-3">
@@ -1050,7 +1050,7 @@ export default function ScoringConfigPage({ params }: { params: Promise<{ id: st
                     onChange={(e) => setKnockoutForm((f) => ({ ...f, condition: e.target.value as KnockoutCondition }))}
                     className={inputCls}
                   >
-                    {Object.entries(KNOCKOUT_CONDITION_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                    {Object.entries(KNOCKOUT_CONDITIONS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                   </select>
                   <input
                     required placeholder="Expected value (e.g. yes, 5)"
